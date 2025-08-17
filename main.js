@@ -296,7 +296,7 @@ async initializeObjects() {
  */
 async connectToPrinter() {
     const host = this.config.host || '192.168.178.34';
-    const wsUrl = `ws://${host}:3000/websocket`;
+    const wsUrl = `ws://${host}:3030/websocket`;
 
     this.log.info(`Connecting to printer at ${wsUrl}`);
 
