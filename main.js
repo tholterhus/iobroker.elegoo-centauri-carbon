@@ -426,6 +426,7 @@ async updateStates(status) {
 getStatusText(statusCode) {
     const statusMap = {
         0: 'Idle',
+        1: 'Homing',
         8: 'Preparing to Print',
         9: 'Starting Print',
         10: 'Paused',
