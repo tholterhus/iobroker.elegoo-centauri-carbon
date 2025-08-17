@@ -3,7 +3,7 @@
 - ioBroker Elegoo Centauri Carbon Adapter
 - Monitors Elegoo Centauri Carbon 3D printer via SDCP protocol
   */
-  ‘use strict’;
+'use strict';
 
 const utils = require(’@iobroker/adapter-core’);
 const WebSocket = require(‘ws’);
@@ -11,7 +11,7 @@ const { v4: uuidv4 } = require(‘uuid’);
 
 class ElegooCentauriCarbon extends utils.Adapter {
 
-```
+
 constructor(options) {
     super({
         ...options,
@@ -295,7 +295,7 @@ async initializeObjects() {
  * Connect to the printer via WebSocket
  */
 async connectToPrinter() {
-    const host = this.config.host || '192.168.1.100';
+    const host = this.config.host || '192.168.178.34';
     const wsUrl = `ws://${host}/websocket`;
 
     this.log.info(`Connecting to printer at ${wsUrl}`);
@@ -601,7 +601,6 @@ onUnload(callback) {
         callback();
     }
 }
-```
 
 }
 
