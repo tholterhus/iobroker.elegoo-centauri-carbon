@@ -422,15 +422,33 @@ async updateStates(status) {
 
 /**
  * Convert status code to human-readable text
+ SDCP_PRINT_STATUS_IDLE = 0
+SDCP_PRINT_STATUS_HOMING = 1
+SDCP_PRINT_STATUS_DROPPING = 2
+SDCP_PRINT_STATUS_EXPOSURING = 3
+SDCP_PRINT_STATUS_LIFTING = 4
+SDCP_PRINT_STATUS_PAUSING = 5
+SDCP_PRINT_STATUS_PAUSED = 6
+SDCP_PRINT_STATUS_STOPPING = 7
+SDCP_PRINT_STATUS_STOPPED = 8
+SDCP_PRINT_STATUS_COMPLETE = 9
+SDCP_PRINT_STATUS_FILE_CHECKING = 10
  */
 getStatusText(statusCode) {
     const statusMap = {
         0: 'Idle',
         1: 'Homing',
-        8: 'Preparing to Print',
-        9: 'Starting Print',
+        2: 'Dropping',
+        3: 'Exposuring',
+        4: 'Lifting',
+        5: 'Pausing',
+        6: 'Paused',
+        7: 'Stopping',
+        8: 'Stopped',
+        9: 'Print complete',
         10: 'Paused',
-        13: 'Printing (Active)'
+        13: 'Printing',
+        16: 'Heating'
     };
     return statusMap[statusCode] || `Unknown Status (${statusCode})`;
 }
