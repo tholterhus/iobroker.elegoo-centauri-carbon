@@ -1,0 +1,105 @@
+{
+"common": {
+"name": "elegoo-centauri-carbon",
+"version": "1.0.0",
+"news": {
+"1.0.0": {
+"en": "Initial release with basic monitoring and control features",
+"de": "Erstveröffentlichung mit grundlegenden Überwachungs- und Kontrollfunktionen",
+"ru": "Первоначальный выпуск с базовыми функциями мониторинга и управления",
+"pt": "Lançamento inicial com recursos básicos de monitoramento e controle",
+"nl": "Initiële release met basis monitoring en controle functies",
+"fr": "Version initiale avec des fonctionnalités de surveillance et de contrôle de base",
+"it": "Rilascio iniziale con funzionalità di monitoraggio e controllo di base",
+"es": "Lanzamiento inicial con características básicas de monitoreo y control",
+"pl": "Wstępne wydanie z podstawowymi funkcjami monitorowania i kontroli",
+"zh-cn": "初始版本，具有基本监控和控制功能"
+}
+},
+"titleLang": {
+"en": "Elegoo Centauri Carbon 3D Printer",
+"de": "Elegoo Centauri Carbon 3D-Drucker",
+"ru": "3D-принтер Elegoo Centauri Carbon",
+"pt": "Impressora 3D Elegoo Centauri Carbon",
+"nl": "Elegoo Centauri Carbon 3D Printer",
+"fr": "Imprimante 3D Elegoo Centauri Carbon",
+"it": "Stampante 3D Elegoo Centauri Carbon",
+"es": "Impresora 3D Elegoo Centauri Carbon",
+"pl": "Drukarka 3D Elegoo Centauri Carbon",
+"zh-cn": "Elegoo Centauri Carbon 3D 打印机"
+},
+"desc": {
+"en": "Monitor and control Elegoo Centauri Carbon 3D printer via SDCP protocol",
+"de": "Überwachung und Steuerung des Elegoo Centauri Carbon 3D-Druckers über SDCP-Protokoll",
+"ru": "Мониторинг и управление 3D-принтером Elegoo Centauri Carbon через протокол SDCP",
+"pt": "Monitorar e controlar impressora 3D Elegoo Centauri Carbon via protocolo SDCP",
+"nl": "Monitor en bedien Elegoo Centauri Carbon 3D printer via SDCP protocol",
+"fr": "Surveiller et contrôler l’imprimante 3D Elegoo Centauri Carbon via le protocole SDCP",
+"it": "Monitora e controlla la stampante 3D Elegoo Centauri Carbon tramite protocollo SDCP",
+"es": "Monitorear y controlar impresora 3D Elegoo Centauri Carbon vía protocolo SDCP",
+"pl": "Monitoruj i kontroluj drukarkę 3D Elegoo Centauri Carbon poprzez protokół SDCP",
+"zh-cn": "通过 SDCP 协议监控和控制 Elegoo Centauri Carbon 3D 打印机"
+},
+"authors": [
+"Your Name [your.email@example.com](mailto:your.email@example.com)"
+],
+"keywords": [
+"3d printer",
+"elegoo",
+"centauri carbon",
+"sdcp",
+"monitoring",
+"printing"
+],
+"license": "MIT",
+"platform": "Javascript/Node.js",
+"main": "main.js",
+"icon": "elegoo-centauri-carbon.png",
+"enabled": true,
+"extIcon": "https://raw.githubusercontent.com/yourusername/ioBroker.elegoo-centauri-carbon/main/admin/elegoo-centauri-carbon.png",
+"readme": "https://github.com/yourusername/ioBroker.elegoo-centauri-carbon/blob/main/README.md",
+"loglevel": "info",
+"mode": "daemon",
+"type": "hardware",
+"compact": true,
+"connectionType": "local",
+"dataSource": "poll",
+"adminUI": {
+"config": "materialize"
+},
+"dependencies": [
+{
+"js-controller": ">=3.2.16"
+}
+]
+},
+"native": {
+"host": "192.168.178.34",
+"pollInterval": 10000,
+"reconnectInterval": 30000,
+"enableDebugLogging": false
+},
+"objects": [],
+"instanceObjects": [
+{
+"_id": "info",
+"type": "channel",
+"common": {
+"name": "Information"
+},
+"native": {}
+},
+{
+"_id": "info.connection",
+"type": "state",
+"common": {
+"name": "Connection status",
+"type": "boolean",
+"role": "indicator.connected",
+"read": true,
+"write": false
+},
+"native": {}
+}
+]
+}
