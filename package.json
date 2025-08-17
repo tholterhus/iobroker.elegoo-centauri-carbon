@@ -1,0 +1,58 @@
+{
+“name”: “iobroker.elegoo-centauri-carbon”,
+“version”: “1.0.0”,
+“description”: “ioBroker adapter for Elegoo Centauri Carbon 3D printer monitoring via SDCP protocol”,
+“author”: {
+“name”: “Your Name”,
+“email”: “your.email@example.com”
+},
+“homepage”: “https://github.com/yourusername/ioBroker.elegoo-centauri-carbon”,
+“license”: “MIT”,
+“keywords”: [
+“ioBroker”,
+“3D printer”,
+“Elegoo”,
+“Centauri Carbon”,
+“SDCP”,
+“monitoring”
+],
+“repository”: {
+“type”: “git”,
+“url”: “https://github.com/yourusername/ioBroker.elegoo-centauri-carbon”
+},
+“engines”: {
+“node”: “>=14.0.0”
+},
+“dependencies”: {
+“@iobroker/adapter-core”: “^2.6.0”,
+“ws”: “^8.0.0”,
+“uuid”: “^9.0.0”
+},
+“devDependencies”: {
+“@iobroker/testing”: “^2.5.0”,
+“@types/node”: “^18.0.0”,
+“eslint”: “^8.0.0”,
+“mocha”: “^10.0.0”,
+“chai”: “^4.3.0”
+},
+“main”: “main.js”,
+“files”: [
+“admin/”,
+“lib/”,
+“www/”,
+“io-package.json”,
+“main.js”,
+“LICENSE”
+],
+“scripts”: {
+“test”: “npm run test:js && npm run test:package”,
+“test:js”: “mocha –exit”,
+“test:package”: “mocha test/testPackageFiles.js”,
+“lint”: “eslint .”,
+“release”: “release-script”
+},
+“bugs”: {
+“url”: “https://github.com/yourusername/ioBroker.elegoo-centauri-carbon/issues”
+},
+“readmeFilename”: “README.md”
+}
