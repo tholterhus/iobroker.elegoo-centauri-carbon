@@ -34,20 +34,20 @@
 cd /opt/iobroker
 
 # Install from GitHub
-iobroker install https://github.com/tholterhus/ioBroker.elegoo-centauri-carbon.git
+iobroker install https://github.com/tholterhus/iobroker.elegoo-centauri-carbon.git
 
 # Or using npm
-npm install https://github.com/tholterhus/ioBroker.elegoo-centauri-carbon.git
+npm install https://github.com/tholterhus/iobroker.elegoo-centauri-carbon.git
 ```
 
 #### Option B: Manual Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/tholterhus/ioBroker.elegoo-centauri-carbon.git
+git clone https://github.com/tholterhus/iobroker.elegoo-centauri-carbon.git
 
 # Navigate to the directory
-cd ioBroker.elegoo-centauri-carbon
+cd iobroker.elegoo-centauri-carbon
 
 # Install dependencies
 npm install
@@ -57,7 +57,7 @@ npm run build
 
 # Link to ioBroker (Linux/macOS)
 cd /opt/iobroker
-npm install ./path/to/ioBroker.elegoo-centauri-carbon
+npm install ./path/to/iobroker.elegoo-centauri-carbon
 
 # Or copy to node_modules (Windows)
 # Copy the entire folder to /opt/iobroker/node_modules/iobroker.elegoo-centauri-carbon
@@ -69,8 +69,8 @@ For developers who want to contribute or modify the adapter:
 
 ```bash
 # Clone the repository
-git clone https://github.com/tholterhus/ioBroker.elegoo-centauri-carbon.git
-cd ioBroker.elegoo-centauri-carbon
+git clone https://github.com/tholterhus/iobroker.elegoo-centauri-carbon.git
+cd iobroker.elegoo-centauri-carbon
 
 # Install dependencies
 npm install
@@ -246,7 +246,7 @@ npm install
 - Review logs for specific error messages
 - Note any recurring patterns
 1. **GitHub Issues**
-- Search existing issues: https://github.com/tholterhus/ioBroker.elegoo-centauri-carbon/issues
+- Search existing issues: https://github.com/tholterhus/iobroker.elegoo-centauri-carbon/issues
 - Create new issue with:
   - ioBroker version
   - Node.js version
@@ -299,6 +299,6 @@ After successful installation:
 
 For installation support:
 
-- GitHub Issues: https://github.com/tholterhus/ioBroker.elegoo-centauri-carbon/issues
+- GitHub Issues: https://github.com/tholterhus/iobroker.elegoo-centauri-carbon/issues
 - ioBroker Forum: https://forum.iobroker.net
-- Documentation: https://github.com/tholterhus/ioBroker.elegoo-centauri-carbon/wiki
+- Documentation: https://github.com/tholterhus/iobroker.elegoo-centauri-carbon/wiki
