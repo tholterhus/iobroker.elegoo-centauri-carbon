@@ -5,9 +5,9 @@
   */
 'use strict';
 
-const utils = require(’@iobroker/adapter-core’);
-const WebSocket = require(‘ws’);
-const { v4: uuidv4 } = require(‘uuid’);
+const utils = require('@iobroker/adapter-core');
+const WebSocket = require('ws');
+const { v4: uuidv4 } = require('uuid');
 
 class ElegooCentauriCarbon extends utils.Adapter {
 
