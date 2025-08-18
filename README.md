@@ -5,9 +5,8 @@
 [![NPM version](https://img.shields.io/npm/v/iobroker.elegoo-centauri-carbon.svg)](https://www.npmjs.com/package/iobroker.elegoo-centauri-carbon)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.elegoo-centauri-carbon.svg)](https://www.npmjs.com/package/iobroker.elegoo-centauri-carbon)
 [![Dependency Status](https://img.shields.io/david/yourusername/iobroker.elegoo-centauri-carbon.svg)](https://david-dm.org/yourusername/iobroker.elegoo-centauri-carbon)
-[![Known Vulnerabilities](https://snyk.io/test/github/yourusername/ioBroker.elegoo-centauri-carbon/badge.svg)](https://snyk.io/test/github/yourusername/ioBroker.elegoo-centauri-carbon)
+[![Known Vulnerabilities](https://snyk.io/test/github/tholterhus/ioBroker.elegoo-centauri-carbon/badge.svg)](https://snyk.io/test/github/tholterhus/ioBroker.elegoo-centauri-carbon)
 
-[![NPM](https://nodei.co/npm/iobroker.elegoo-centauri-carbon.png?downloads=true)](https://nodei.co/npm/iobroker.elegoo-centauri-carbon/)
 
 ## Elegoo Centauri Carbon 3D Printer Adapter for ioBroker
 
@@ -116,7 +115,7 @@ npm install https://github.com/yourusername/ioBroker.elegoo-centauri-carbon.git
 ### Network Requirements
 
 - The Elegoo Centauri Carbon must be connected to your local network
-- The printer’s WebSocket server runs on port 80 at `/websocket`
+- The printer’s WebSocket server runs on port 3030 at `/websocket` (default)
 - No authentication is required for the WebSocket connection
 - Ensure your ioBroker instance can reach the printer’s IP address
 
@@ -178,7 +177,7 @@ This adapter implements the SDCP (Simple Device Communication Protocol) version 
 The printer’s WebSocket server is available at:
 
 ```
-ws://[PRINTER_IP]/websocket
+ws://[PRINTER_IP]:3030/websocket
 ```
 
 ### Connection Management
@@ -245,6 +244,7 @@ npm run test
 - WebSocket connection management
 - Automatic reconnection
 - Multi-language support
+- Code and underlying logic entire created by AI (Claude) with absolutely minimal human intervention
 
 ## License
 
