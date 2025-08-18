@@ -3,8 +3,8 @@
 "version": "1.0.0",
 "description": "ioBroker adapter for Elegoo Centauri Carbon 3D printer monitoring via SDCP protocol",
 "author": {
-"name": "Your Name",
-"email": "your.email@example.com"
+"name": "Tim Klima",
+"email": "tklima@holterhus.com"
 },
 "homepage": "https://github.com/tholterhus/iobroker.elegoo-centauri-carbon",
 "license": "MIT",
@@ -52,7 +52,7 @@
 "release": "release-script"
 },
 "bugs": {
-"url": "https://github.com/yourusername/ioBroker.elegoo-centauri-carbon/issues"
+"url": "https://github.com/tholterhus/iobroker.elegoo-centauri-carbon/issues"
 },
 "readmeFilename": "README.md"
 }
