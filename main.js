@@ -1097,7 +1097,7 @@ disableCameraStream() {
  * Get camera stream URL (for external access)
  */
 getCameraStreamUrl() {
-    const host = this.config.host || '192.168.1.100';
+    const host = this.config.host || '192.168.178.34';
     const port = this.config.cameraPort || 8080;
     
     // Common MJPEG stream endpoints for Elegoo printers
