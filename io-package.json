@@ -75,9 +75,15 @@
 },
 "native": {
 "host": "192.168.178.34",
+"port": 3030,
+"cameraPort": 8080,
 "pollInterval": 10000,
 "reconnectInterval": 30000,
-"enableDebugLogging": false
+"enableDebugLogging": false,
+"enableCamera": true,
+"enableAutoDiscovery": true,
+"enableAlerts": true,
+"alertClearTimeout": 300000
 },
 "objects": [],
 "instanceObjects": [
