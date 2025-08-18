@@ -2,12 +2,14 @@
 
 - ioBroker Elegoo Centauri Carbon Adapter
 - Monitors Elegoo Centauri Carbon 3D printer via SDCP protocol
-  */
+*/
 'use strict';
 
 const utils = require('@iobroker/adapter-core');
 const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
+const dgram = require('dgram');
+const os = require('os');
 
 class ElegooCentauriCarbon extends utils.Adapter {
 
@@ -22,7 +24,15 @@ constructor(options) {
     this.reconnectTimer = null;
     this.pingTimer = null;
     this.statusRequestTimer = null;
+    this.discoveryTimer = null;
+    this.alertTimers = new Map();
     this.isConnected = false;
+    this.lastStatus = {};
+    this.alertThresholds = {
+        bedCooldownTemp: 40,
+        maxTempDiff: 10,
+        connectionTimeout: 60000
+    };
 
     this.on('ready', this.onReady.bind(this));
     this.on('stateChange', this.onStateChange.bind(this));
@@ -38,6 +48,11 @@ async onReady() {
     // Initialize adapter configuration
     await this.initializeObjects();
 
+    // Auto-discover printers if enabled
+    if (this.config.enableAutoDiscovery) {
+        await this.discoverPrinters();
+    }
+
     // Connect to printer
     await this.connectToPrinter();
 
@@ -49,7 +64,71 @@ async onReady() {
  * Create necessary objects and states
  */
 async initializeObjects() {
-    // Connection status
+    // Network discovery
+    await this.setObjectNotExistsAsync('discovery', {
+        type: 'channel',
+        common: {
+            name: 'Network Discovery'
+        },
+        native: {}
+    });
+
+    await this.setObjectNotExistsAsync('discovery.auto_discovered', {
+        type: 'state',
+        common: {
+            name: 'Auto-discovered Printers',
+            type: 'string',
+            role: 'json',
+            read: true,
+            write: false,
+        },
+        native: {}
+    });
+
+    await this.setObjectNotExistsAsync('discovery.last_scan', {
+        type: 'state',
+        common: {
+            name: 'Last Discovery Scan',
+            type: 'number',
+            role: 'value.time',
+            read: true,
+            write: false,
+        },
+        native: {}
+    });
+
+    // Alerts and notifications
+    await this.setObjectNotExistsAsync('alerts', {
+        type: 'channel',
+        common: {
+            name: 'Alerts and Notifications'
+        },
+        native: {}
+    });
+
+    const alertStates = [
+        { id: 'print_complete', name: 'Print Complete Alert', type: 'boolean', role: 'indicator.alarm' },
+        { id: 'print_paused', name: 'Print Paused Alert', type: 'boolean', role: 'indicator.alarm' },
+        { id: 'print_error', name: 'Print Error Alert', type: 'boolean', role: 'indicator.alarm' },
+        { id: 'bed_cooled', name: 'Bed Cooled Down Alert', type: 'boolean', role: 'indicator.alarm' },
+        { id: 'connection_lost', name: 'Connection Lost Alert', type: 'boolean', role: 'indicator.alarm' },
+        { id: 'last_alert', name: 'Last Alert Message', type: 'string', role: 'text' },
+        { id: 'alert_count', name: 'Total Alert Count', type: 'number', role: 'value' }
+    ];
+
+    for (const alert of alertStates) {
+        await this.setObjectNotExistsAsync(`alerts.${alert.id}`, {
+            type: 'state',
+            common: {
+                name: alert.name,
+                type: alert.type,
+                role: alert.role,
+                read: true,
+                write: false,
+            },
+            native: {}
+        });
+    }
     await this.setObjectNotExistsAsync('info', {
         type: 'channel',
         common: {
@@ -207,7 +286,83 @@ async initializeObjects() {
         });
     }
 
-    // Lighting
+    // Camera integration
+    await this.setObjectNotExistsAsync('camera', {
+        type: 'channel',
+        common: {
+            name: 'Camera'
+        },
+        native: {}
+    });
+
+    await this.setObjectNotExistsAsync('camera.stream_url', {
+        type: 'state',
+        common: {
+            name: 'Camera Stream URL',
+            type: 'string',
+            role: 'text.url',
+            read: true,
+            write: false,
+        },
+        native: {}
+    });
+
+    await this.setObjectNotExistsAsync('camera.stream_enabled', {
+        type: 'state',
+        common: {
+            name: 'Camera Stream Enabled',
+            type: 'boolean',
+            role: 'indicator',
+            read: true,
+            write: false,
+        },
+        native: {}
+    });
+
+    await this.setObjectNotExistsAsync('camera.timelapse_status', {
+        type: 'state',
+        common: {
+            name: 'Timelapse Status',
+            type: 'number',
+            role: 'value',
+            read: true,
+            write: false,
+        },
+        native: {}
+    });
+
+    // Additional printer stats
+    await this.setObjectNotExistsAsync('stats', {
+        type: 'channel',
+        common: {
+            name: 'Printer Statistics'
+        },
+        native: {}
+    });
+
+    const statsStates = [
+        { id: 'total_print_time', name: 'Total Print Time', type: 'number', role: 'value.time', unit: 'hours' },
+        { id: 'print_error', name: 'Print Error', type: 'string', role: 'text' },
+        { id: 'release_film_status', name: 'Release Film Status', type: 'string', role: 'text' },
+        { id: 'uv_led_temp', name: 'UV LED Temperature', type: 'number', role: 'value.temperature', unit: '°C' },
+        { id: 'remaining_print_time', name: 'Remaining Print Time', type: 'number', role: 'value.time', unit: 'hours' },
+        { id: 'remaining_layers', name: 'Remaining Layers', type: 'number', role: 'value' }
+    ];
+
+    for (const stat of statsStates) {
+        await this.setObjectNotExistsAsync(`stats.${stat.id}`, {
+            type: 'state',
+            common: {
+                name: stat.name,
+                type: stat.type,
+                role: stat.role,
+                unit: stat.unit || '',
+                read: true,
+                write: false,
+            },
+            native: {}
+        });
+    }
     await this.setObjectNotExistsAsync('lighting', {
         type: 'channel',
         common: {
@@ -260,7 +415,11 @@ async initializeObjects() {
         { id: 'resume_print', name: 'Resume Print', role: 'button.play' },
         { id: 'cancel_print', name: 'Cancel Print', role: 'button.stop' },
         { id: 'toggle_light', name: 'Toggle Light', role: 'button' },
-        { id: 'request_status', name: 'Request Status Update', role: 'button' }
+        { id: 'request_status', name: 'Request Status Update', role: 'button' },
+        { id: 'enable_camera', name: 'Enable Camera Stream', role: 'button' },
+        { id: 'disable_camera', name: 'Disable Camera Stream', role: 'button' },
+        { id: 'discover_printers', name: 'Discover Network Printers', role: 'button' },
+        { id: 'clear_alerts', name: 'Clear All Alerts', role: 'button' }
     ];
 
     for (const control of controlStates) {
@@ -296,7 +455,8 @@ async initializeObjects() {
  */
 async connectToPrinter() {
     const host = this.config.host || '192.168.178.34';
-    const wsUrl = `ws://${host}:3030/websocket`;
+    const port = this.config.port || 3030;
+    const wsUrl = `ws://${host}:${port}/websocket`;
 
     this.log.info(`Connecting to printer at ${wsUrl}`);
 
@@ -307,6 +467,7 @@ async connectToPrinter() {
             this.log.info('Connected to printer');
             this.isConnected = true;
             this.setState('info.connection', true, true);
+            this.clearAlert('connection_lost');
 
             // Start ping timer to keep connection alive
             this.startPingTimer();
@@ -314,8 +475,8 @@ async connectToPrinter() {
             // Start periodic status requests
             this.startStatusRequestTimer();
 
-            // Request initial status
-            this.requestStatus();
+            // Request initial status and validate SDCP
+            this.validateSDCPCompatibility();
         });
 
         this.ws.on('message', (data) => {
@@ -331,6 +492,7 @@ async connectToPrinter() {
             this.log.warn('WebSocket connection closed');
             this.isConnected = false;
             this.setState('info.connection', false, true);
+            this.triggerAlert('connection_lost', 'Connection to printer lost');
             this.stopTimers();
             this.scheduleReconnect();
         });
@@ -339,24 +501,345 @@ async connectToPrinter() {
             this.log.error(`WebSocket error: ${error.message}`);
             this.isConnected = false;
             this.setState('info.connection', false, true);
+            this.triggerAlert('connection_lost', `WebSocket error: ${error.message}`);
         });
 
     } catch (error) {
         this.log.error(`Failed to connect to printer: ${error.message}`);
+        this.triggerAlert('connection_lost', `Failed to connect: ${error.message}`);
         this.scheduleReconnect();
     }
+}
+
+/**
+ * Validate SDCP compatibility with printer
+ */
+validateSDCPCompatibility() {
+    this.log.info('Validating SDCP compatibility...');
+    
+    // Send initial command to verify SDCP compatibility
+    const testCommand = {
+        Id: '',
+        Data: {
+            Cmd: 0,
+            Data: {},
+            RequestID: uuidv4(),
+            MainboardID: '',
+            TimeStamp: Date.now(),
+            From: 1
+        }
+    };
+
+    this.ws.send(JSON.stringify(testCommand));
+    
+    // Set timeout for SDCP validation
+    setTimeout(() => {
+        if (!this.lastStatus.validated) {
+            this.log.warn('SDCP validation timeout - printer may not be fully compatible');
+        }
+    }, 5000);
+}
+
+/**
+ * Discover printers on the local network
+ */
+async discoverPrinters() {
+    this.log.info('Starting network discovery for Elegoo printers...');
+    
+    const discoveredPrinters = [];
+    const networkInterfaces = os.networkInterfaces();
+    const promises = [];
+
+    // Scan common network ranges
+    for (const [interfaceName, addresses] of Object.entries(networkInterfaces)) {
+        if (!addresses) continue;
+        
+        for (const addr of addresses) {
+            if (addr.family === 'IPv4' && !addr.internal) {
+                const networkBase = addr.address.split('.').slice(0, 3).join('.');
+                promises.push(this.scanNetworkRange(networkBase, discoveredPrinters));
+            }
+        }
+    }
+
+    try {
+        await Promise.all(promises);
+        
+        if (discoveredPrinters.length > 0) {
+            this.log.info(`Discovered ${discoveredPrinters.length} Elegoo printers`);
+            await this.setState('discovery.auto_discovered', JSON.stringify(discoveredPrinters), true);
+        } else {
+            this.log.info('No Elegoo printers discovered on network');
+            await this.setState('discovery.auto_discovered', '[]', true);
+        }
+        
+        await this.setState('discovery.last_scan', Date.now(), true);
+        
+    } catch (error) {
+        this.log.error(`Network discovery error: ${error.message}`);
+    }
+}
+
+/**
+ * Scan a network range for SDCP-compatible printers
+ */
+async scanNetworkRange(networkBase, discoveredPrinters) {
+    const scanPromises = [];
+    
+    // Scan common IP range (1-254)
+    for (let i = 1; i <= 254; i++) {
+        const ip = `${networkBase}.${i}`;
+        scanPromises.push(this.testPrinterConnection(ip, discoveredPrinters));
+    }
+
+    await Promise.allSettled(scanPromises);
+}
+
+/**
+ * Test connection to potential printer
+ */
+async testPrinterConnection(ip, discoveredPrinters) {
+    return new Promise((resolve) => {
+        const port = this.config.port || 3030;
+        const wsUrl = `ws://${ip}:${port}/websocket`;
+        
+        const testWs = new WebSocket(wsUrl, { handshakeTimeout: 2000 });
+        
+        const timeout = setTimeout(() => {
+            testWs.terminate();
+            resolve(false);
+        }, 3000);
+
+        testWs.on('open', () => {
+            // Send SDCP test command
+            const testCommand = {
+                Id: '',
+                Data: {
+                    Cmd: 1, // Get device attributes
+                    Data: {},
+                    RequestID: uuidv4(),
+                    MainboardID: '',
+                    TimeStamp: Date.now(),
+                    From: 1
+                }
+            };
+            
+            testWs.send(JSON.stringify(testCommand));
+        });
+
+        testWs.on('message', (data) => {
+            try {
+                const response = JSON.parse(data.toString());
+                
+                // Check if response contains SDCP-like structure
+                if (response.Data || response.Status) {
+                    const printerInfo = {
+                        ip: ip,
+                        port: port,
+                        discovered: new Date().toISOString(),
+                        wsUrl: wsUrl
+                    };
+                    
+                    // Try to extract device information
+                    if (response.MainboardID) {
+                        printerInfo.mainboardId = response.MainboardID;
+                    }
+                    
+                    discoveredPrinters.push(printerInfo);
+                    this.log.info(`Discovered Elegoo printer at ${ip}:${port}`);
+                }
+            } catch (e) {
+                // Not a valid SDCP response
+            }
+            
+            clearTimeout(timeout);
+            testWs.close();
+            resolve(true);
+        });
+
+        testWs.on('error', () => {
+            clearTimeout(timeout);
+            resolve(false);
+        });
+
+        testWs.on('close', () => {
+            clearTimeout(timeout);
+            resolve(false);
+        });
+    });
 }
 
 /**
  * Handle incoming messages from printer
  */
 handleMessage(message) {
+    // Mark SDCP as validated on first valid response
+    this.lastStatus.validated = true;
+
     if (message.Status) {
         // Status update message
+        this.processStatusUpdate(message.Status);
         this.updateStates(message.Status);
     } else if (message.Data && message.Data.Cmd !== undefined) {
         // Command response
+        this.handleCommandResponse(message);
         this.log.debug(`Received command response: ${JSON.stringify(message)}`);
+    }
+}
+
+/**
+ * Process status updates and trigger alerts
+ */
+processStatusUpdate(status) {
+    const currentStatus = status.PrintInfo?.Status;
+    const currentStatusText = this.getStatusText(currentStatus);
+    const previousStatus = this.lastStatus.printStatus;
+    
+    // Check for status changes that should trigger alerts
+    if (previousStatus !== undefined && previousStatus !== currentStatus) {
+        this.handleStatusChange(previousStatus, currentStatus, currentStatusText);
+    }
+
+    // Check temperature-based alerts
+    if (status.TempOfHotbed !== undefined) {
+        this.checkTemperatureAlerts(status.TempOfHotbed, 'hotbed');
+    }
+
+    // Update last known status
+    this.lastStatus = {
+        ...this.lastStatus,
+        printStatus: currentStatus,
+        hotbedTemp: status.TempOfHotbed,
+        timestamp: Date.now()
+    };
+}
+
+/**
+ * Handle printer status changes and trigger appropriate alerts
+ */
+handleStatusChange(previousStatus, currentStatus, statusText) {
+    this.log.info(`Status changed from ${this.getStatusText(previousStatus)} to ${statusText}`);
+
+    switch (currentStatus) {
+        case 4: // Paused
+        case 10: // Paused
+            this.triggerAlert('print_paused', `Print job paused: ${statusText}`);
+            break;
+            
+        case 5: // Completed 
+        case 14: // Print Complete
+            this.triggerAlert('print_complete', `Print job completed successfully`);
+            break;
+            
+        case 6: // Cancelled
+        case 7: // Error
+        case 15: // Print Failed
+            this.triggerAlert('print_error', `Print job failed or cancelled: ${statusText}`);
+            break;
+    }
+}
+
+/**
+ * Check temperature-based alerts
+ */
+checkTemperatureAlerts(currentTemp, sensor) {
+    const previousTemp = this.lastStatus[`${sensor}Temp`];
+    const cooldownThreshold = this.alertThresholds.bedCooldownTemp;
+
+    // Bed cooled down alert
+    if (sensor === 'hotbed' && previousTemp !== undefined) {
+        if (previousTemp > cooldownThreshold && currentTemp <= cooldownThreshold) {
+            this.triggerAlert('bed_cooled', `Bed has cooled down to ${currentTemp}°C`);
+        }
+    }
+
+    // Temperature anomaly detection
+    if (previousTemp !== undefined) {
+        const tempDiff = Math.abs(currentTemp - previousTemp);
+        if (tempDiff > this.alertThresholds.maxTempDiff) {
+            this.log.warn(`Large temperature change detected on ${sensor}: ${tempDiff}°C`);
+        }
+    }
+}
+
+/**
+ * Trigger an alert
+ */
+async triggerAlert(alertType, message) {
+    this.log.warn(`ALERT [${alertType.toUpperCase()}]: ${message}`);
+    
+    try {
+        await this.setState(`alerts.${alertType}`, true, true);
+        await this.setState('alerts.last_alert', `[${new Date().toISOString()}] ${alertType}: ${message}`, true);
+        
+        // Increment alert counter
+        const currentCount = await this.getStateAsync('alerts.alert_count');
+        const newCount = (currentCount?.val || 0) + 1;
+        await this.setState('alerts.alert_count', newCount, true);
+
+        // Auto-clear alert after timeout
+        if (this.alertTimers.has(alertType)) {
+            clearTimeout(this.alertTimers.get(alertType));
+        }
+        
+        const timeout = setTimeout(async () => {
+            await this.clearAlert(alertType);
+            this.alertTimers.delete(alertType);
+        }, this.config.alertClearTimeout || 300000); // 5 minutes default
+        
+        this.alertTimers.set(alertType, timeout);
+        
+    } catch (error) {
+        this.log.error(`Error triggering alert: ${error.message}`);
+    }
+}
+
+/**
+ * Clear a specific alert
+ */
+async clearAlert(alertType) {
+    try {
+        await this.setState(`alerts.${alertType}`, false, true);
+        this.log.debug(`Cleared alert: ${alertType}`);
+    } catch (error) {
+        this.log.error(`Error clearing alert: ${error.message}`);
+    }
+}
+
+/**
+ * Clear all alerts
+ */
+async clearAllAlerts() {
+    const alertTypes = ['print_complete', 'print_paused', 'print_error', 'bed_cooled', 'connection_lost'];
+    
+    for (const alertType of alertTypes) {
+        await this.clearAlert(alertType);
+        
+        if (this.alertTimers.has(alertType)) {
+            clearTimeout(this.alertTimers.get(alertType));
+            this.alertTimers.delete(alertType);
+        }
+    }
+    
+    this.log.info('All alerts cleared');
+}
+
+/**
+ * Handle command responses, especially camera stream URLs
+ */
+handleCommandResponse(message) {
+    const cmd = message.Data.Cmd;
+    const data = message.Data.Data;
+
+    if (cmd === 386 && data && data.StreamUrl) {
+        // Camera stream URL response
+        this.setState('camera.stream_url', data.StreamUrl, true);
+        this.setState('camera.stream_enabled', true, true);
+        this.log.info(`Camera stream enabled: ${data.StreamUrl}`);
+    } else if (cmd === 386 && data && data.Enable === 0) {
+        // Camera disabled
+        this.setState('camera.stream_enabled', false, true);
+        this.log.info('Camera stream disabled');
     }
 }
 
@@ -401,8 +884,46 @@ async updateStates(status) {
             }
         }
 
-        // Print information
+        // Camera and timelapse
+        if (status.TimeLapseStatus !== undefined) {
+            await this.setState('camera.timelapse_status', status.TimeLapseStatus, true);
+        }
+
+        // Additional statistics (if available)
+        if (status.TotalPrintTime) {
+            // Convert from milliseconds to hours
+            const totalHours = Math.round((status.TotalPrintTime / (1000 * 60 * 60)) * 100) / 100;
+            await this.setState('stats.total_print_time', totalHours, true);
+        }
+
+        if (status.UVLedTemp !== undefined) {
+            await this.setState('stats.uv_led_temp', status.UVLedTemp, true);
+        }
+
+        if (status.PrintError) {
+            await this.setState('stats.print_error', status.PrintError, true);
+        }
+
+        if (status.ReleaseFilmStatus) {
+            await this.setState('stats.release_film_status', status.ReleaseFilmStatus, true);
+        }
+
+        // Calculate remaining time and layers if print info is available
         if (status.PrintInfo) {
+            const printInfo = status.PrintInfo;
+            
+            // Calculate remaining layers
+            const remainingLayers = printInfo.TotalLayer - printInfo.CurrentLayer;
+            await this.setState('stats.remaining_layers', remainingLayers, true);
+            
+            // Calculate remaining time (rough estimate based on progress)
+            if (printInfo.TotalTicks > 0 && printInfo.CurrentTicks > 0) {
+                const remainingTicks = printInfo.TotalTicks - printInfo.CurrentTicks;
+                // Assuming ticks are in milliseconds, convert to hours
+                const remainingHours = Math.round((remainingTicks / (1000 * 60 * 60)) * 100) / 100;
+                await this.setState('stats.remaining_print_time', remainingHours, true);
+            }
+        }
             const printInfo = status.PrintInfo;
             await this.setState('print.status', printInfo.Status, true);
             await this.setState('print.status_text', this.getStatusText(printInfo.Status), true);
@@ -422,33 +943,27 @@ async updateStates(status) {
 
 /**
  * Convert status code to human-readable text
- SDCP_PRINT_STATUS_IDLE = 0
-SDCP_PRINT_STATUS_HOMING = 1
-SDCP_PRINT_STATUS_DROPPING = 2
-SDCP_PRINT_STATUS_EXPOSURING = 3
-SDCP_PRINT_STATUS_LIFTING = 4
-SDCP_PRINT_STATUS_PAUSING = 5
-SDCP_PRINT_STATUS_PAUSED = 6
-SDCP_PRINT_STATUS_STOPPING = 7
-SDCP_PRINT_STATUS_STOPPED = 8
-SDCP_PRINT_STATUS_COMPLETE = 9
-SDCP_PRINT_STATUS_FILE_CHECKING = 10
  */
 getStatusText(statusCode) {
     const statusMap = {
         0: 'Idle',
-        1: 'Homing',
-        2: 'Dropping',
-        3: 'Exposuring',
-        4: 'Lifting',
-        5: 'Pausing',
-        6: 'Paused',
-        7: 'Stopping',
-        8: 'Stopped',
-        9: 'Print complete',
+        1: 'Preparing',
+        2: 'Starting',
+        3: 'Printing',
+        4: 'Paused',
+        5: 'Completed',
+        6: 'Cancelled',
+        7: 'Error',
+        8: 'Preparing to Print',
+        9: 'Starting Print', 
         10: 'Paused',
-        13: 'Printing',
-        16: 'Heating'
+        11: 'Resuming',
+        12: 'Cancelling',
+        13: 'Printing (Active)',
+        14: 'Print Complete',
+        15: 'Print Failed',
+        16: 'Heating',
+        17: 'Cooling Down'
     };
     return statusMap[statusCode] || `Unknown Status (${statusCode})`;
 }
@@ -516,6 +1031,18 @@ onStateChange(id, state) {
             case 'start_print':
                 this.handleStartPrint();
                 break;
+            case 'enable_camera':
+                this.enableCameraStream();
+                break;
+            case 'disable_camera':
+                this.disableCameraStream();
+                break;
+            case 'discover_printers':
+                this.discoverPrinters();
+                break;
+            case 'clear_alerts':
+                this.clearAllAlerts();
+                break;
         }
 
         // Reset button state
@@ -549,8 +1076,41 @@ async handleStartPrint() {
 }
 
 /**
- * Start ping timer to keep connection alive
+ * Enable camera stream
  */
+enableCameraStream() {
+    this.sendCommand(386, { Enable: 1 });
+    this.log.info('Enabling camera stream...');
+}
+
+/**
+ * Disable camera stream
+ */
+disableCameraStream() {
+    this.sendCommand(386, { Enable: 0 });
+    this.log.info('Disabling camera stream...');
+    this.setState('camera.stream_enabled', false, true);
+    this.setState('camera.stream_url', '', true);
+}
+
+/**
+ * Get camera stream URL (for external access)
+ */
+getCameraStreamUrl() {
+    const host = this.config.host || '192.168.1.100';
+    const port = this.config.cameraPort || 8080;
+    
+    // Common MJPEG stream endpoints for Elegoo printers
+    const possibleEndpoints = [
+        `http://${host}:${port}/video_feed`,
+        `http://${host}:${port}/stream.mjpg`,
+        `http://${host}:${port}/mjpeg`,
+        `http://${host}/video_feed`,
+        `http://${host}/stream.mjpg`
+    ];
+    
+    return possibleEndpoints[0]; // Return first option, can be configured
+}
 startPingTimer() {
     this.pingTimer = setInterval(() => {
         if (this.isConnected && this.ws) {
@@ -620,6 +1180,7 @@ onUnload(callback) {
         callback();
     }
 }
+
 
 }
 
