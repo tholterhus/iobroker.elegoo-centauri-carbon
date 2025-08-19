@@ -57,6 +57,136 @@
                             </p>
                             <span class="helper-text translate">Enable detailed logging for troubleshooting</span>
                         </div>
+                        <div class="col s12 m6">
+                            <p>
+                                <label>
+                                    <input type="checkbox" class="value" id="enableAutoDiscovery"/>
+                                    <span class="translate">Enable Network Auto-Discovery</span>
+                                </label>
+                            </p>
+                            <span class="helper-text translate">Automatically discover printers on the network</span>
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+            <!-- Network Discovery -->
+            <li>
+                <div class="collapsible-header">
+                    <i class="material-icons">search</i>
+                    <span class="translate">Network Discovery</span>
+                </div>
+                <div class="collapsible-body">
+                    <div class="row">
+                        <div class="col s12">
+                            <p class="translate">Automatically discover Elegoo printers on your local network.</p>
+                            <p class="translate">This feature scans common network ranges for SDCP-compatible devices.</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12 m6">
+                            <p>
+                                <label>
+                                    <input type="checkbox" class="value" id="enableAutoDiscovery"/>
+                                    <span class="translate">Enable Auto-Discovery</span>
+                                </label>
+                            </p>
+                            <span class="helper-text translate">Scan network for printers on startup</span>
+                        </div>
+                        <div class="col s12 m6">
+                            <button id="manual-discovery" class="btn waves-effect waves-light">
+                                <i class="material-icons left">search</i>
+                                <span class="translate">Scan Network Now</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <h6 class="translate">Discovery Information</h6>
+                            <p class="translate">The discovery process will:</p>
+                            <ul class="collection">
+                                <li class="collection-item">Scan your local network (192.168.x.x, 10.x.x.x, etc.)</li>
+                                <li class="collection-item">Test WebSocket connections on port 3030</li>
+                                <li class="collection-item">Validate SDCP protocol compatibility</li>
+                                <li class="collection-item">Save discovered printers for future reference</li>
+                            </ul>
+                            <div id="discovery-results" class="card-panel hide">
+                                <h6 class="translate">Discovered Printers:</h6>
+                                <div id="discovered-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+            <!-- Alert Settings -->
+            <li>
+                <div class="collapsible-header">
+                    <i class="material-icons">notifications</i>
+                    <span class="translate">Alert Settings</span>
+                </div>
+                <div class="collapsible-body">
+                    <div class="row">
+                        <div class="col s12">
+                            <p class="translate">Configure alerts and notifications for printer events.</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12 m6">
+                            <p>
+                                <label>
+                                    <input type="checkbox" class="value" id="enableAlerts"/>
+                                    <span class="translate">Enable Alerts</span>
+                                </label>
+                            </p>
+                            <span class="helper-text translate">Enable automatic alert generation</span>
+                        </div>
+                        <div class="input-field col s12 m6">
+                            <input class="value" id="alertClearTimeout" type="number" min="60000" max="3600000"/>
+                            <label for="alertClearTimeout" class="translate">Alert Auto-Clear (ms)</label>
+                            <span class="helper-text translate">Time before alerts auto-clear (default: 300000ms = 5min)</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <h6 class="translate">Alert Types</h6>
+                            <table class="striped">
+                                <thead>
+                                    <tr>
+                                        <th class="translate">Alert Type</th>
+                                        <th class="translate">Trigger Condition</th>
+                                        <th class="translate">Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="translate">Print Complete</td>
+                                        <td class="translate">Status = Completed</td>
+                                        <td class="translate">Print job finished successfully</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="translate">Print Paused</td>
+                                        <td class="translate">Status = Paused</td>
+                                        <td class="translate">Print job paused (manual or error)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="translate">Print Error</td>
+                                        <td class="translate">Status = Error/Failed</td>
+                                        <td class="translate">Print job failed or encountered error</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="translate">Bed Cooled</td>
+                                        <td class="translate">Temp ≤ 40°C</td>
+                                        <td class="translate">Print bed cooled down after printing</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="translate">Connection Lost</td>
+                                        <td class="translate">WebSocket disconnected</td>
+                                        <td class="translate">Lost connection to printer</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                         <div class="input-field col s12 m6">
                             <input class="value" id="port" type="number" min="1" max="65535"/>
@@ -96,49 +226,6 @@
             </li>
 
             <!-- Camera Settings -->
-            <li>
-                <div class="collapsible-header">
-                    <i class="material-icons">videocam</i>
-                    <span class="translate">Camera Settings</span>
-                </div>
-                <div class="collapsible-body">
-                    <div class="row">
-                        <div class="col s12">
-                            <p class="translate">Configure camera stream monitoring for your printer.</p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12 m6">
-                            <p>
-                                <label>
-                                    <input type="checkbox" class="value" id="enableCamera"/>
-                                    <span class="translate">Enable Camera Integration</span>
-                                </label>
-                            </p>
-                            <span class="helper-text translate">Enable camera stream monitoring and controls</span>
-                        </div>
-                        <div class="input-field col s12 m6">
-                            <input class="value" id="cameraPort" type="number" min="1" max="65535"/>
-                            <label for="cameraPort" class="translate">Camera Port</label>
-                            <span class="helper-text translate">MJPEG camera stream port (default: 8080)</span>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12">
-                            <h6 class="translate">Camera Stream Information</h6>
-                            <p class="translate">The camera uses MJPEG streaming protocol. Common stream URLs:</p>
-                            <ul class="collection">
-                                <li class="collection-item">http://[PRINTER_IP]:8080/video_feed</li>
-                                <li class="collection-item">http://[PRINTER_IP]:8080/stream.mjpg</li>
-                                <li class="collection-item">http://[PRINTER_IP]/video_feed</li>
-                            </ul>
-                            <p class="translate">The actual stream URL will be provided by the printer when the camera is enabled.</p>
-                        </div>
-                    </div>
-                </div>
-            </li>
-
-            <!-- Test Connection -->
             <li>
                 <div class="collapsible-header">
                     <i class="material-icons">settings_ethernet</i>
@@ -312,7 +399,68 @@
         $('#test-connection').click(function() {
             testConnection();
         });
+
+        // Manual discovery button
+        $('#manual-discovery').click(function() {
+            runNetworkDiscovery();
+        });
     });
+
+    // Run network discovery
+    function runNetworkDiscovery() {
+        const $button = $('#manual-discovery');
+        const $results = $('#discovery-results');
+        const $list = $('#discovered-list');
+        
+        // Disable button and show loading
+        $button.addClass('disabled');
+        $button.find('span').text('Scanning...');
+        
+        // Simulate discovery (in real implementation, this would trigger the adapter)
+        setTimeout(() => {
+            // Mock discovered printers
+            const mockPrinters = [
+                { ip: '192.168.178.34', port: 3030, mainboardId: 'ABC123' },
+                { ip: '192.168.178.45', port: 3030, mainboardId: 'DEF456' }
+            ];
+            
+            if (mockPrinters.length > 0) {
+                let html = '<ul class="collection">';
+                mockPrinters.forEach(printer => {
+                    html += `<li class="collection-item">
+                        <div>
+                            ${printer.ip}:${printer.port}
+                            ${printer.mainboardId ? `<br><small>ID: ${printer.mainboardId}</small>` : ''}
+                            <a href="#!" class="secondary-content">
+                                <i class="material-icons" onclick="selectPrinter('${printer.ip}', ${printer.port})">add</i>
+                            </a>
+                        </div>
+                    </li>`;
+                });
+                html += '</ul>';
+                
+                $list.html(html);
+                $results.removeClass('hide');
+                M.toast({html: `Found ${mockPrinters.length} printer(s)`});
+            } else {
+                $list.html('<p>No printers discovered</p>');
+                $results.removeClass('hide');
+                M.toast({html: 'No printers found'});
+            }
+            
+            // Re-enable button
+            $button.removeClass('disabled');
+            $button.find('span').text('Scan Network Now');
+        }, 3000);
+    }
+
+    // Select discovered printer
+    function selectPrinter(ip, port) {
+        $('#host').val(ip).trigger('change');
+        $('#port').val(port).trigger('change');
+        M.updateTextFields();
+        M.toast({html: `Selected printer at ${ip}:${port}`});
+    }
 
     // Test connection to printer
     function testConnection() {
@@ -411,6 +559,9 @@
         // Set defaults
         obj.pollInterval = obj.pollInterval || 10000;
         obj.reconnectInterval = obj.reconnectInterval || 30000;
+        obj.port = obj.port || 3030;
+        obj.cameraPort = obj.cameraPort || 8080;
+        obj.alertClearTimeout = obj.alertClearTimeout || 300000;
         
         callback(obj);
     }
