@@ -12,7 +12,6 @@ const os = require('os');
 
 class ElegooCentauriCarbon extends utils.Adapter {
 
-'''
 constructor(options) {
     super({
         ...options,
@@ -1179,7 +1178,7 @@ onUnload(callback) {
         callback();
     }
 }
-'''
+
 
 }
 
