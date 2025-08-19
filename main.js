@@ -3,7 +3,7 @@
 - ioBroker Elegoo Centauri Carbon Adapter
 - Monitors Elegoo Centauri Carbon 3D printer via SDCP protocol
   */
-‘use strict’;
+'use strict';
 
 const utils = require(’@iobroker/adapter-core’);
 const WebSocket = require(‘ws’);
