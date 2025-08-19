@@ -17,6 +17,93 @@
 <script type="text/javascript" src="../../lib/js/ace/ace.js"></script>
 <script type="text/javascript" src="../../lib/js/ace/ext-language_tools.js"></script>
 <script type="text/javascript" src="../../js/adapter-settings.js"></script>
+
+<style>
+    .adapter-container {
+        padding: 20px;
+        max-width: 1200px;
+    }
+    
+    .logo {
+        width: 64px;
+        height: 64px;
+    }
+    
+    /* Fix input field visibility */
+    .input-field input[type=text], 
+    .input-field input[type=number], 
+    .input-field input[type=email], 
+    .input-field input[type=url], 
+    .input-field input[type=time], 
+    .input-field input[type=date], 
+    .input-field input[type=datetime], 
+    .input-field input[type=datetime-local], 
+    .input-field input[type=tel], 
+    .input-field input[type=search], 
+    .input-field textarea.materialize-textarea {
+        color: #000 !important;
+        background-color: #fff !important;
+        border-bottom: 1px solid #9e9e9e !important;
+    }
+    
+    .input-field input[type=text]:focus, 
+    .input-field input[type=number]:focus {
+        border-bottom: 1px solid #26a69a !important;
+        box-shadow: 0 1px 0 0 #26a69a !important;
+        color: #000 !important;
+    }
+    
+    .input-field label {
+        color: #9e9e9e !important;
+    }
+    
+    .input-field label.active {
+        color: #26a69a !important;
+    }
+    
+    /* Fix helper text visibility */
+    .helper-text {
+        color: #757575 !important;
+        font-size: 12px;
+    }
+    
+    /* Fix checkbox visibility */
+    [type="checkbox"]:checked + span:not(.lever):before {
+        border-right: 2px solid #26a69a;
+        border-bottom: 2px solid #26a69a;
+    }
+    
+    /* Table styling */
+    table.striped > tbody > tr:nth-child(odd) {
+        background-color: rgba(242, 242, 242, 0.5);
+    }
+    
+    .collection .collection-item {
+        background-color: #fff;
+        line-height: 1.5rem;
+        padding: 10px 20px;
+        margin: 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    /* Button styling */
+    .btn {
+        background-color: #26a69a;
+    }
+    
+    .btn:hover, .btn-large:hover {
+        background-color: #2bbbad;
+    }
+    
+    /* Card panel styling */
+    .card-panel {
+        background-color: #fff;
+        padding: 24px;
+        margin: 0.5rem 0 1rem 0;
+        border-radius: 2px;
+        box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
+    }
+</style>
 ```
 
 </head>
@@ -28,7 +115,7 @@
 ```
 <div class="row">
     <div class="col s12 m4 l2">
-        <img src="elegoo-centauri-carbon.png" class="logo">
+        <img src="elegoo-centauri-carbon.png" class="logo" alt="Elegoo Centauri Carbon">
     </div>
 </div>
 
@@ -44,27 +131,63 @@
                 <div class="collapsible-body">
                     <div class="row">
                         <div class="input-field col s12 m6">
-                            <input class="value" id="host" type="text" length="100"/>
+                            <input class="value" id="host" type="text" data-default="192.168.178.34"/>
                             <label for="host" class="translate">Printer IP Address</label>
                             <span class="helper-text translate">IP address of your Elegoo Centauri Carbon printer</span>
-                        <div class="row">
-                        <div class="col s12 m6">
-                            <p>
-                                <label>
-                                    <input type="checkbox" class="value" id="enableDebugLogging"/>
-                                    <span class="translate">Enable Debug Logging</span>
-                                </label>
-                            </p>
-                            <span class="helper-text translate">Enable detailed logging for troubleshooting</span>
                         </div>
+                        <div class="input-field col s12 m6">
+                            <input class="value" id="port" type="number" min="1" max="65535" data-default="3030"/>
+                            <label for="port" class="translate">WebSocket Port</label>
+                            <span class="helper-text translate">WebSocket port (default: 3030)</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s12 m6">
+                            <input class="value" id="pollInterval" type="number" min="1000" max="300000" data-default="10000"/>
+                            <label for="pollInterval" class="translate">Poll Interval (ms)</label>
+                            <span class="helper-text translate">How often to request status updates</span>
+                        </div>
+                        <div class="input-field col s12 m6">
+                            <input class="value" id="reconnectInterval" type="number" min="5000" max="300000" data-default="30000"/>
+                            <label for="reconnectInterval" class="translate">Reconnect Interval (ms)</label>
+                            <span class="helper-text translate">Wait time before reconnection attempts</span>
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+            <!-- Camera Settings -->
+            <li>
+                <div class="collapsible-header">
+                    <i class="material-icons">videocam</i>
+                    <span class="translate">Camera Settings</span>
+                </div>
+                <div class="collapsible-body">
+                    <div class="row">
                         <div class="col s12 m6">
                             <p>
                                 <label>
-                                    <input type="checkbox" class="value" id="enableAutoDiscovery"/>
-                                    <span class="translate">Enable Network Auto-Discovery</span>
+                                    <input type="checkbox" class="value" id="enableCamera" data-default="true"/>
+                                    <span class="translate">Enable Camera Integration</span>
                                 </label>
                             </p>
-                            <span class="helper-text translate">Automatically discover printers on the network</span>
+                            <span class="helper-text translate">Enable camera stream monitoring and controls</span>
+                        </div>
+                        <div class="input-field col s12 m6">
+                            <input class="value" id="cameraPort" type="number" min="1" max="65535" data-default="8080"/>
+                            <label for="cameraPort" class="translate">Camera Port</label>
+                            <span class="helper-text translate">MJPEG camera stream port</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <h6 class="translate">Camera Stream Information</h6>
+                            <p class="translate">Common MJPEG stream URLs:</p>
+                            <div class="collection">
+                                <div class="collection-item">http://[PRINTER_IP]:8080/video_feed</div>
+                                <div class="collection-item">http://[PRINTER_IP]:8080/stream.mjpg</div>
+                                <div class="collection-item">http://[PRINTER_IP]/video_feed</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -78,23 +201,17 @@
                 </div>
                 <div class="collapsible-body">
                     <div class="row">
-                        <div class="col s12">
-                            <p class="translate">Automatically discover Elegoo printers on your local network.</p>
-                            <p class="translate">This feature scans common network ranges for SDCP-compatible devices.</p>
-                        </div>
-                    </div>
-                    <div class="row">
                         <div class="col s12 m6">
                             <p>
                                 <label>
-                                    <input type="checkbox" class="value" id="enableAutoDiscovery"/>
+                                    <input type="checkbox" class="value" id="enableAutoDiscovery" data-default="true"/>
                                     <span class="translate">Enable Auto-Discovery</span>
                                 </label>
                             </p>
-                            <span class="helper-text translate">Scan network for printers on startup</span>
+                            <span class="helper-text translate">Automatically discover printers on startup</span>
                         </div>
                         <div class="col s12 m6">
-                            <button id="manual-discovery" class="btn waves-effect waves-light">
+                            <button id="manual-discovery" class="btn waves-effect waves-light" type="button">
                                 <i class="material-icons left">search</i>
                                 <span class="translate">Scan Network Now</span>
                             </button>
@@ -102,16 +219,8 @@
                     </div>
                     <div class="row">
                         <div class="col s12">
-                            <h6 class="translate">Discovery Information</h6>
-                            <p class="translate">The discovery process will:</p>
-                            <ul class="collection">
-                                <li class="collection-item">Scan your local network (192.168.x.x, 10.x.x.x, etc.)</li>
-                                <li class="collection-item">Test WebSocket connections on port 3030</li>
-                                <li class="collection-item">Validate SDCP protocol compatibility</li>
-                                <li class="collection-item">Save discovered printers for future reference</li>
-                            </ul>
-                            <div id="discovery-results" class="card-panel hide">
-                                <h6 class="translate">Discovered Printers:</h6>
+                            <div id="discovery-results" class="card-panel" style="display: none;">
+                                <h6 class="translate">Discovery Results:</h6>
                                 <div id="discovered-list"></div>
                             </div>
                         </div>
@@ -127,105 +236,46 @@
                 </div>
                 <div class="collapsible-body">
                     <div class="row">
-                        <div class="col s12">
-                            <p class="translate">Configure alerts and notifications for printer events.</p>
-                        </div>
-                    </div>
-                    <div class="row">
                         <div class="col s12 m6">
                             <p>
                                 <label>
-                                    <input type="checkbox" class="value" id="enableAlerts"/>
+                                    <input type="checkbox" class="value" id="enableAlerts" data-default="true"/>
                                     <span class="translate">Enable Alerts</span>
                                 </label>
                             </p>
                             <span class="helper-text translate">Enable automatic alert generation</span>
                         </div>
                         <div class="input-field col s12 m6">
-                            <input class="value" id="alertClearTimeout" type="number" min="60000" max="3600000"/>
+                            <input class="value" id="alertClearTimeout" type="number" min="60000" max="3600000" data-default="300000"/>
                             <label for="alertClearTimeout" class="translate">Alert Auto-Clear (ms)</label>
-                            <span class="helper-text translate">Time before alerts auto-clear (default: 300000ms = 5min)</span>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12">
-                            <h6 class="translate">Alert Types</h6>
-                            <table class="striped">
-                                <thead>
-                                    <tr>
-                                        <th class="translate">Alert Type</th>
-                                        <th class="translate">Trigger Condition</th>
-                                        <th class="translate">Description</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="translate">Print Complete</td>
-                                        <td class="translate">Status = Completed</td>
-                                        <td class="translate">Print job finished successfully</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="translate">Print Paused</td>
-                                        <td class="translate">Status = Paused</td>
-                                        <td class="translate">Print job paused (manual or error)</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="translate">Print Error</td>
-                                        <td class="translate">Status = Error/Failed</td>
-                                        <td class="translate">Print job failed or encountered error</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="translate">Bed Cooled</td>
-                                        <td class="translate">Temp ≤ 40°C</td>
-                                        <td class="translate">Print bed cooled down after printing</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="translate">Connection Lost</td>
-                                        <td class="translate">WebSocket disconnected</td>
-                                        <td class="translate">Lost connection to printer</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                        <div class="input-field col s12 m6">
-                            <input class="value" id="port" type="number" min="1" max="65535"/>
-                            <label for="port" class="translate">WebSocket Port</label>
-                            <span class="helper-text translate">WebSocket port (default: 3030)</span>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="input-field col s12 m6">
-                            <input class="value" id="cameraPort" type="number" min="1" max="65535"/>
-                            <label for="cameraPort" class="translate">Camera Port</label>
-                            <span class="helper-text translate">MJPEG camera stream port (default: 8080)</span>
-                        </div>
-                        <div class="col s12 m6">
-                            <p>
-                                <label>
-                                    <input type="checkbox" class="value" id="enableCamera"/>
-                                    <span class="translate">Enable Camera Integration</span>
-                                </label>
-                            </p>
-                            <span class="helper-text translate">Enable camera stream monitoring and controls</span>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="input-field col s12 m6">
-                            <input class="value" id="pollInterval" type="number" min="1000" max="300000"/>
-                            <label for="pollInterval" class="translate">Poll Interval (ms)</label>
-                            <span class="helper-text translate">How often to request status updates (1000-300000ms)</span>
-                        </div>
-                        <div class="input-field col s12 m6">
-                            <input class="value" id="reconnectInterval" type="number" min="5000" max="300000"/>
-                            <label for="reconnectInterval" class="translate">Reconnect Interval (ms)</label>
-                            <span class="helper-text translate">How long to wait before reconnecting after connection loss</span>
+                            <span class="helper-text translate">Time before alerts automatically clear</span>
                         </div>
                     </div>
                 </div>
             </li>
 
-            <!-- Camera Settings -->
+            <!-- Advanced Settings -->
+            <li>
+                <div class="collapsible-header">
+                    <i class="material-icons">settings</i>
+                    <span class="translate">Advanced Settings</span>
+                </div>
+                <div class="collapsible-body">
+                    <div class="row">
+                        <div class="col s12 m6">
+                            <p>
+                                <label>
+                                    <input type="checkbox" class="value" id="enableDebugLogging" data-default="false"/>
+                                    <span class="translate">Enable Debug Logging</span>
+                                </label>
+                            </p>
+                            <span class="helper-text translate">Enable detailed logging for troubleshooting</span>
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+            <!-- Test Connection -->
             <li>
                 <div class="collapsible-header">
                     <i class="material-icons">settings_ethernet</i>
@@ -235,11 +285,11 @@
                     <div class="row">
                         <div class="col s12">
                             <p class="translate">Test the connection to your printer to verify settings.</p>
-                            <button id="test-connection" class="btn waves-effect waves-light">
+                            <button id="test-connection" class="btn waves-effect waves-light" type="button">
                                 <i class="material-icons left">play_arrow</i>
                                 <span class="translate">Test Connection</span>
                             </button>
-                            <div id="test-result" class="card-panel hide" style="margin-top: 10px;">
+                            <div id="test-result" class="card-panel" style="display: none; margin-top: 10px;">
                                 <span id="test-message"></span>
                             </div>
                         </div>
@@ -247,7 +297,7 @@
                 </div>
             </li>
 
-            <!-- SDCP Commands Info -->
+            <!-- SDCP Protocol Info -->
             <li>
                 <div class="collapsible-header">
                     <i class="material-icons">info</i>
@@ -292,14 +342,14 @@
                                         <td class="translate">Resume paused print job</td>
                                     </tr>
                                     <tr>
-                                        <td>403</td>
-                                        <td class="translate">Toggle Light</td>
-                                        <td class="translate">Control printer lighting</td>
-                                    </tr>
-                                    <tr>
                                         <td>386</td>
                                         <td class="translate">Camera Stream</td>
                                         <td class="translate">Enable/disable camera stream</td>
+                                    </tr>
+                                    <tr>
+                                        <td>403</td>
+                                        <td class="translate">Toggle Light</td>
+                                        <td class="translate">Control printer lighting</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -315,81 +365,167 @@
 </div>
 
 <script type="text/javascript">
-    // Dictionary for translations
+    // Translation dictionary
     systemDictionary = {
         "Connection Settings": {
             "en": "Connection Settings",
-            "de": "Verbindungseinstellungen",
-            "ru": "Настройки подключения",
-            "pt": "Configurações de Conexão",
-            "nl": "Verbindingsinstellingen",
-            "fr": "Paramètres de connexion",
-            "it": "Impostazioni di connessione",
-            "es": "Configuración de Conexión",
-            "pl": "Ustawienia połączenia",
-            "zh-cn": "连接设置"
+            "de": "Verbindungseinstellungen"
         },
         "Printer IP Address": {
             "en": "Printer IP Address",
-            "de": "Drucker IP-Adresse",
-            "ru": "IP-адрес принтера",
-            "pt": "Endereço IP da Impressora",
-            "nl": "Printer IP Adres",
-            "fr": "Adresse IP de l'imprimante",
-            "it": "Indirizzo IP della stampante",
-            "es": "Dirección IP de la Impresora",
-            "pl": "Adres IP drukarki",
-            "zh-cn": "打印机IP地址"
+            "de": "Drucker IP-Adresse"
         },
         "IP address of your Elegoo Centauri Carbon printer": {
             "en": "IP address of your Elegoo Centauri Carbon printer",
-            "de": "IP-Adresse Ihres Elegoo Centauri Carbon Druckers",
-            "ru": "IP-адрес вашего принтера Elegoo Centauri Carbon",
-            "pt": "Endereço IP da sua impressora Elegoo Centauri Carbon",
-            "nl": "IP-adres van uw Elegoo Centauri Carbon printer",
-            "fr": "Adresse IP de votre imprimante Elegoo Centauri Carbon",
-            "it": "Indirizzo IP della tua stampante Elegoo Centauri Carbon",
-            "es": "Dirección IP de tu impresora Elegoo Centauri Carbon",
-            "pl": "Adres IP drukarki Elegoo Centauri Carbon",
-            "zh-cn": "您的 Elegoo Centauri Carbon 打印机的 IP 地址"
+            "de": "IP-Adresse Ihres Elegoo Centauri Carbon Druckers"
+        },
+        "WebSocket Port": {
+            "en": "WebSocket Port",
+            "de": "WebSocket Port"
+        },
+        "WebSocket port (default: 3030)": {
+            "en": "WebSocket port (default: 3030)",
+            "de": "WebSocket Port (Standard: 3030)"
         },
         "Poll Interval (ms)": {
             "en": "Poll Interval (ms)",
-            "de": "Abfrageintervall (ms)",
-            "ru": "Интервал опроса (мс)",
-            "pt": "Intervalo de Consulta (ms)",
-            "nl": "Poll Interval (ms)",
-            "fr": "Intervalle d'interrogation (ms)",
-            "it": "Intervallo di polling (ms)",
-            "es": "Intervalo de Consulta (ms)",
-            "pl": "Interwał odpytywania (ms)",
-            "zh-cn": "轮询间隔（毫秒）"
+            "de": "Abfrageintervall (ms)"
         },
-        "Test Connection": {
-            "en": "Test Connection",
-            "de": "Verbindung testen",
-            "ru": "Тест соединения",
-            "pt": "Testar Conexão",
-            "nl": "Verbinding testen",
-            "fr": "Tester la connexion",
-            "it": "Testa connessione",
-            "es": "Probar Conexión",
-            "pl": "Testuj połączenie",
-            "zh-cn": "测试连接"
+        "How often to request status updates": {
+            "en": "How often to request status updates",
+            "de": "Wie oft Statusupdates angefordert werden"
+        },
+        "Reconnect Interval (ms)": {
+            "en": "Reconnect Interval (ms)",
+            "de": "Wiederverbindungsintervall (ms)"
+        },
+        "Wait time before reconnection attempts": {
+            "en": "Wait time before reconnection attempts",
+            "de": "Wartezeit vor Wiederverbindungsversuchen"
+        },
+        "Camera Settings": {
+            "en": "Camera Settings",
+            "de": "Kamera-Einstellungen"
+        },
+        "Enable Camera Integration": {
+            "en": "Enable Camera Integration",
+            "de": "Kamera-Integration aktivieren"
+        },
+        "Enable camera stream monitoring and controls": {
+            "en": "Enable camera stream monitoring and controls",
+            "de": "Kamera-Stream-Überwachung und -Steuerung aktivieren"
+        },
+        "Camera Port": {
+            "en": "Camera Port",
+            "de": "Kamera Port"
+        },
+        "MJPEG camera stream port": {
+            "en": "MJPEG camera stream port",
+            "de": "MJPEG Kamera-Stream Port"
+        },
+        "Network Discovery": {
+            "en": "Network Discovery",
+            "de": "Netzwerk-Erkennung"
+        },
+        "Enable Auto-Discovery": {
+            "en": "Enable Auto-Discovery",
+            "de": "Auto-Erkennung aktivieren"
+        },
+        "Automatically discover printers on startup": {
+            "en": "Automatically discover printers on startup",
+            "de": "Drucker beim Start automatisch erkennen"
+        },
+        "Scan Network Now": {
+            "en": "Scan Network Now",
+            "de": "Netzwerk jetzt scannen"
+        },
+        "Alert Settings": {
+            "en": "Alert Settings",
+            "de": "Alarm-Einstellungen"
+        },
+        "Enable Alerts": {
+            "en": "Enable Alerts",
+            "de": "Alarme aktivieren"
+        },
+        "Enable automatic alert generation": {
+            "en": "Enable automatic alert generation",
+            "de": "Automatische Alarm-Generierung aktivieren"
+        },
+        "Alert Auto-Clear (ms)": {
+            "en": "Alert Auto-Clear (ms)",
+            "de": "Alarm Auto-Löschen (ms)"
+        },
+        "Time before alerts automatically clear": {
+            "en": "Time before alerts automatically clear",
+            "de": "Zeit bis Alarme automatisch gelöscht werden"
+        },
+        "Advanced Settings": {
+            "en": "Advanced Settings",
+            "de": "Erweiterte Einstellungen"
         },
         "Enable Debug Logging": {
             "en": "Enable Debug Logging",
-            "de": "Debug-Protokollierung aktivieren",
-            "ru": "Включить отладочное логирование",
-            "pt": "Habilitar Log de Debug",
-            "nl": "Debug logging inschakelen",
-            "fr": "Activer la journalisation de débogage",
-            "it": "Abilita logging di debug",
-            "es": "Habilitar Registro de Debug",
-            "pl": "Włącz logowanie debugowania",
-            "zh-cn": "启用调试日志"
+            "de": "Debug-Protokollierung aktivieren"
+        },
+        "Enable detailed logging for troubleshooting": {
+            "en": "Enable detailed logging for troubleshooting",
+            "de": "Detaillierte Protokollierung zur Fehlerbehebung aktivieren"
+        },
+        "Connection Test": {
+            "en": "Connection Test",
+            "de": "Verbindungstest"
+        },
+        "Test Connection": {
+            "en": "Test Connection",
+            "de": "Verbindung testen"
+        },
+        "Test the connection to your printer to verify settings.": {
+            "en": "Test the connection to your printer to verify settings.",
+            "de": "Testen Sie die Verbindung zu Ihrem Drucker, um die Einstellungen zu überprüfen."
+        },
+        "SDCP Protocol Info": {
+            "en": "SDCP Protocol Info",
+            "de": "SDCP Protokoll Info"
+        },
+        "Supported Commands": {
+            "en": "Supported Commands",
+            "de": "Unterstützte Befehle"
+        },
+        "Command": {
+            "en": "Command",
+            "de": "Befehl"
+        },
+        "Function": {
+            "en": "Function",
+            "de": "Funktion"
+        },
+        "Description": {
+            "en": "Description",
+            "de": "Beschreibung"
+        },
+        "Request Status": {
+            "en": "Request Status",
+            "de": "Status anfordern"
+        },
+        "Get current printer status": {
+            "en": "Get current printer status",
+            "de": "Aktuellen Druckerstatus abrufen"
+        },
+        "Common MJPEG stream URLs:": {
+            "en": "Common MJPEG stream URLs:",
+            "de": "Häufige MJPEG-Stream-URLs:"
+        },
+        "Camera Stream Information": {
+            "en": "Camera Stream Information",
+            "de": "Kamera-Stream-Informationen"
+        },
+        "Discovery Results:": {
+            "en": "Discovery Results:",
+            "de": "Erkennungsergebnisse:"
         }
     };
+
+    let onChange;
 
     // Initialize materialize components
     $(document).ready(function() {
@@ -406,65 +542,10 @@
         });
     });
 
-    // Run network discovery
-    function runNetworkDiscovery() {
-        const $button = $('#manual-discovery');
-        const $results = $('#discovery-results');
-        const $list = $('#discovered-list');
-        
-        // Disable button and show loading
-        $button.addClass('disabled');
-        $button.find('span').text('Scanning...');
-        
-        // Simulate discovery (in real implementation, this would trigger the adapter)
-        setTimeout(() => {
-            // Mock discovered printers
-            const mockPrinters = [
-                { ip: '192.168.178.34', port: 3030, mainboardId: 'ABC123' },
-                { ip: '192.168.178.45', port: 3030, mainboardId: 'DEF456' }
-            ];
-            
-            if (mockPrinters.length > 0) {
-                let html = '<ul class="collection">';
-                mockPrinters.forEach(printer => {
-                    html += `<li class="collection-item">
-                        <div>
-                            ${printer.ip}:${printer.port}
-                            ${printer.mainboardId ? `<br><small>ID: ${printer.mainboardId}</small>` : ''}
-                            <a href="#!" class="secondary-content">
-                                <i class="material-icons" onclick="selectPrinter('${printer.ip}', ${printer.port})">add</i>
-                            </a>
-                        </div>
-                    </li>`;
-                });
-                html += '</ul>';
-                
-                $list.html(html);
-                $results.removeClass('hide');
-                M.toast({html: `Found ${mockPrinters.length} printer(s)`});
-            } else {
-                $list.html('<p>No printers discovered</p>');
-                $results.removeClass('hide');
-                M.toast({html: 'No printers found'});
-            }
-            
-            // Re-enable button
-            $button.removeClass('disabled');
-            $button.find('span').text('Scan Network Now');
-        }, 3000);
-    }
-
-    // Select discovered printer
-    function selectPrinter(ip, port) {
-        $('#host').val(ip).trigger('change');
-        $('#port').val(port).trigger('change');
-        M.updateTextFields();
-        M.toast({html: `Selected printer at ${ip}:${port}`});
-    }
-
     // Test connection to printer
     function testConnection() {
         const host = $('#host').val();
+        const port = $('#port').val();
         const $button = $('#test-connection');
         const $result = $('#test-result');
         const $message = $('#test-message');
@@ -478,15 +559,11 @@
         $button.addClass('disabled');
         $button.find('span').text('Testing...');
         
-        // Simple ping test (note: actual implementation would need server-side support)
-        // For demo purposes, we'll simulate a connection test
         setTimeout(() => {
             try {
-                // In a real implementation, you would make an AJAX call to test the WebSocket connection
-                // For now, we'll just validate the IP format
                 const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
                 if (ipRegex.test(host)) {
-                    showTestResult('success', `Connection test initiated for ${host}. Check the adapter log for results.`);
+                    showTestResult('success', `Connection test initiated for ${host}:${port || 3030}. Check the adapter log for results.`);
                 } else {
                     showTestResult('error', 'Invalid IP address format.');
                 }
@@ -504,65 +581,154 @@
         const $result = $('#test-result');
         const $message = $('#test-message');
         
-        $result.removeClass('hide red-lighten-4 green-lighten-4');
+        $result.removeClass('green lighten-4 red lighten-4');
+        $result.css('display', 'block');
         
         if (type === 'success') {
-            $result.addClass('green-lighten-4');
+            $result.addClass('green lighten-4');
         } else {
-            $result.addClass('red-lighten-4');
+            $result.addClass('red lighten-4');
         }
         
         $message.text(message);
     }
 
-    // Load settings
-    function load(settings, onChange) {
+    // Run network discovery
+    function runNetworkDiscovery() {
+        const $button = $('#manual-discovery');
+        const $results = $('#discovery-results');
+        const $list = $('#discovered-list');
+        
+        // Disable button and show loading
+        $button.addClass('disabled');
+        $button.find('span').text('Scanning...');
+        
+        setTimeout(() => {
+            // Mock discovered printers for demo
+            const mockPrinters = [
+                { ip: '192.168.178.34', port: 3030, mainboardId: 'ABC123' }
+            ];
+            
+            if (mockPrinters.length > 0) {
+                let html = '<div class="collection">';
+                mockPrinters.forEach(printer => {
+                    html += `<div class="collection-item">
+                        <div>
+                            <strong>${printer.ip}:${printer.port}</strong>
+                            ${printer.mainboardId ? `<br><small>ID: ${printer.mainboardId}</small>` : ''}
+                            <a href="#!" class="secondary-content btn-small waves-effect waves-light" onclick="selectPrinter('${printer.ip}', ${printer.port})">
+                                Use This Printer
+                            </a>
+                        </div>
+                    </div>`;
+                });
+                html += '</div>';
+                
+                $list.html(html);
+                $results.show();
+                M.toast({html: `Found ${mockPrinters.length} printer(s)`});
+            } else {
+                $list.html('<p>No printers discovered on the network.</p>');
+                $results.show();
+                M.toast({html: 'No printers found'});
+            }
+            
+            // Re-enable button
+            $button.removeClass('disabled');
+            $button.find('span').text('Scan Network Now');
+        }, 3000);
+    }
+
+    // Select discovered printer
+    function selectPrinter(ip, port) {
+        $('#host').val(ip);
+        $('#port').val(port);
+        M.updateTextFields();
+        
+        // Trigger change event
+        $('#host').trigger('input');
+        $('#port').trigger('input');
+        
+        M.toast({html: `Selected printer at ${ip}:${port}`});
+    }
+
+    // Load settings from ioBroker
+    function load(settings, onChange_) {
         if (!settings) return;
+        
+        onChange = onChange_;
         
         $('.value').each(function() {
             const $this = $(this);
             const id = $this.attr('id');
+            let value = settings[id];
+            
+            // Use default value if setting is undefined
+            if (value === undefined) {
+                value = $this.data('default');
+            }
             
             if ($this.attr('type') === 'checkbox') {
-                $this.prop('checked', settings[id]).trigger('change');
+                $this.prop('checked', value === true || value === 'true').trigger('change');
             } else {
-                $this.val(settings[id]).trigger('change');
+                $this.val(value).trigger('change');
             }
         });
         
         // Update labels for materialize
         M.updateTextFields();
         
-        onChange(false);
+        // Set up change listeners
+        $('.value').on('input change', function() {
+            if (onChange) onChange(false);
+        });
+        
+        if (onChange) onChange(false);
     }
 
-    // Save settings
+    // Save settings to ioBroker
     function save(callback) {
         const obj = {};
+        
         $('.value').each(function() {
             const $this = $(this);
             const id = $this.attr('id');
             
             if ($this.attr('type') === 'checkbox') {
                 obj[id] = $this.prop('checked');
+            } else if ($this.attr('type') === 'number') {
+                const value = parseInt($this.val(), 10);
+                obj[id] = isNaN(value) ? $this.data('default') : value;
             } else {
-                obj[id] = $this.val();
+                obj[id] = $this.val() || $this.data('default');
             }
         });
         
         // Validate required fields
         if (!obj.host) {
-            M.toast({html: 'Please enter a printer IP address'});
+            M.toast({html: 'Please enter a printer IP address', classes: 'red'});
             return;
         }
         
-        // Set defaults
-        obj.pollInterval = obj.pollInterval || 10000;
-        obj.reconnectInterval = obj.reconnectInterval || 30000;
-        obj.port = obj.port || 3030;
-        obj.cameraPort = obj.cameraPort || 8080;
-        obj.alertClearTimeout = obj.alertClearTimeout || 300000;
+        // Validate IP address format
+        const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+        if (!ipRegex.test(obj.host)) {
+            M.toast({html: 'Please enter a valid IP address', classes: 'red'});
+            return;
+        }
         
+        // Validate port ranges
+        if (obj.port < 1 || obj.port > 65535) {
+            M.toast({html: 'WebSocket port must be between 1 and 65535', classes: 'red'});
+            return;
+        }
+        
+        if (obj.cameraPort < 1 || obj.cameraPort > 65535) {
+            M.toast({html: 'Camera port must be between 1 and 65535', classes: 'red'});
+            return;
+        }
+        
+        M.toast({html: 'Settings saved successfully', classes: 'green'});
         callback(obj);
     }
 </script>
