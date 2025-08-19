@@ -5,11 +5,11 @@
   */
 'use strict';
 
-const utils = require(’@iobroker/adapter-core’);
-const WebSocket = require(‘ws’);
-const { v4: uuidv4 } = require(‘uuid’);
-const dgram = require(‘dgram’);
-const os = require(‘os’);
+const utils = require('@iobroker/adapter-core');
+const WebSocket = require('ws');
+const { v4: uuidv4 } = require('uuid');
+const dgram = require('dgram');
+const os = require('os');
 
 class ElegooCentauriCarbon extends utils.Adapter {
 
