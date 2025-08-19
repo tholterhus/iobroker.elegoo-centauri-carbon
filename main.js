@@ -1,8 +1,7 @@
 /**
-
-- ioBroker Elegoo Centauri Carbon Adapter
-- Monitors Elegoo Centauri Carbon 3D printer via SDCP protocol
-*/
+* ioBroker Elegoo Centauri Carbon Adapter
+* Monitors Elegoo Centauri Carbon 3D printer via SDCP protocol
+**/
 'use strict';
 
 const utils = require('@iobroker/adapter-core');
@@ -13,7 +12,7 @@ const os = require('os');
 
 class ElegooCentauriCarbon extends utils.Adapter {
 
-
+'''
 constructor(options) {
     super({
         ...options,
@@ -64,8 +63,6 @@ async onReady() {
  * Create necessary objects and states
  */
 async initializeObjects() {
-    this.log.info('initializeObjects');
-
     // Network discovery
     await this.setObjectNotExistsAsync('discovery', {
         type: 'channel',
@@ -456,7 +453,6 @@ async initializeObjects() {
  * Connect to the printer via WebSocket
  */
 async connectToPrinter() {
-    this.log.info('connectToPrinter');
     const host = this.config.host || '192.168.178.34';
     const port = this.config.port || 3030;
     const wsUrl = 'ws://${host}:${port}/websocket';
@@ -1100,7 +1096,7 @@ disableCameraStream() {
  * Get camera stream URL (for external access)
  */
 getCameraStreamUrl() {
-    const host = this.config.host || '192.168.178.34';
+    const host = this.config.host || '192.168.1.100';
     const port = this.config.cameraPort || 8080;
     
     // Common MJPEG stream endpoints for Elegoo printers
@@ -1183,7 +1179,7 @@ onUnload(callback) {
         callback();
     }
 }
-
+'''
 
 }
 
