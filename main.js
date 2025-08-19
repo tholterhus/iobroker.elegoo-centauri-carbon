@@ -933,7 +933,6 @@ async updateStates(status) {
             await this.setState('print.print_speed', printInfo.PrintSpeedPct, true);
             await this.setState('print.current_ticks', printInfo.CurrentTicks, true);
             await this.setState('print.total_ticks', printInfo.TotalTicks, true);
-        }
 
     } catch (error) {
         this.log.error(`Error updating states: ${error.message}`);
