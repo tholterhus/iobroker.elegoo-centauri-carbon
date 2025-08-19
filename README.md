@@ -17,34 +17,12 @@ This adapter enables monitoring and control of the Elegoo Centauri Carbon 3D pri
 
 ### Monitoring
 
-- **Real-time Status**: Current print status, progress, layer information with 17+ status codes
+- **Real-time Status**: Current print status, progress, layer information
 - **Temperature Monitoring**: Hotbed, nozzle, and enclosure temperatures with targets
 - **Position Tracking**: X, Y, Z coordinates and Z-offset
 - **Fan Speed Monitoring**: Model fan, auxiliary fan, and box fan speeds
 - **Lighting Status**: RGB lighting and secondary light status
-- **Camera Integration**: MJPEG video stream monitoring and control
-- **Advanced Statistics**: Total print time, remaining time, UV LED temperature, error reporting
-- **Network Discovery**: Automatic discovery of SDCP-compatible printers on local network
-- **Smart Alerts**: Automated notifications for print completion, errors, pauses, and temperature events
 - **Connection Status**: Real-time connection monitoring with automatic reconnection
-
-### Control
-
-- **Print Control**: Start, pause, resume, and cancel print jobs
-- **Status Requests**: Manual status updates
-- **Light Control**: Toggle printer lighting
-- **Camera Control**: Enable/disable camera streaming
-- **Network Discovery**: Manual and automatic printer discovery
-- **Alert Management**: Clear individual or all alerts
-- **File Selection**: Specify files for printing
-
-### Intelligent Monitoring
-
-- **Status Change Detection**: Automatic alerts when print status changes
-- **Temperature Alerts**: Notifications when bed cools down to 40°C or temperature anomalies
-- **Error Detection**: Immediate alerts for print failures, pauses, or connection issues
-- **Multi-printer Support**: Foundation for monitoring multiple printers (extensible)
-- **SDCP Validation**: Automatic compatibility checking with connected devices
 
 ### Control
 
@@ -396,20 +374,27 @@ npm run test
 
 ## Changelog
 
-### 1.0.0 (2025-08-17)
+### 1.0.0 (2025-08-19)
 
-- Initial release
-- Basic monitoring and control features
-- SDCP protocol implementation
-- WebSocket connection management
-- Automatic reconnection
-- Multi-language support
+- Initial release with comprehensive monitoring and control features
+- SDCP protocol implementation for Elegoo Centauri Carbon
+- WebSocket connection management with automatic reconnection
+- **Network Auto-Discovery**: Automatic detection of SDCP-compatible printers on local network (inspired by OpenCentauri project)
+- **Smart Alert System**: Automated notifications for print completion, errors, pauses, temperature events (inspired by centauri-carbon-monitor)
+- **Camera Integration**: Full MJPEG stream support with enable/disable controls
+- **Enhanced Status Monitoring**: 17+ printer status codes with intelligent change detection
+- **Temperature Alerts**: Notifications when bed cools down to 40°C after printing
+- **Advanced Statistics**: Total print time, remaining time estimates, UV LED monitoring
+- **Multi-language Support**: English, German, Russian, and 7 additional languages
+- **Comprehensive API**: 50+ data points for complete printer monitoring
+- **Professional Admin Interface**: Network discovery, camera settings, alert configuration
+- **SDCP Validation**: Automatic compatibility checking during connection
 
 ## License
 
 MIT License
 
-Copyright (c) 2025 Tim Klima
+Copyright (c) 2025 [Your Name]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the “Software”), to deal
