@@ -1,304 +1,432 @@
-# Installation Guide - Elegoo Centauri Carbon ioBroker Adapter
+# ioBroker.elegoo-centauri-carbon
 
-## Prerequisites
+![Logo](admin/elegoo-centauri-carbon.png)
 
-### System Requirements
+[![NPM version](https://img.shields.io/npm/v/iobroker.elegoo-centauri-carbon.svg)](https://www.npmjs.com/package/iobroker.elegoo-centauri-carbon)
+[![Downloads](https://img.shields.io/npm/dm/iobroker.elegoo-centauri-carbon.svg)](https://www.npmjs.com/package/iobroker.elegoo-centauri-carbon)
+[![Dependency Status](https://img.shields.io/david/yourusername/iobroker.elegoo-centauri-carbon.svg)](https://david-dm.org/yourusername/iobroker.elegoo-centauri-carbon)
+[![Known Vulnerabilities](https://snyk.io/test/github/yourusername/ioBroker.elegoo-centauri-carbon/badge.svg)](https://snyk.io/test/github/yourusername/ioBroker.elegoo-centauri-carbon)
 
-- ioBroker installation (v4.0.0 or higher)
-- Node.js version 14.0.0 or higher
-- Elegoo Centauri Carbon 3D printer with firmware 1.1.29 or compatible
-- Network connection between ioBroker and the printer
+[![NPM](https://nodei.co/npm/iobroker.elegoo-centauri-carbon.png?downloads=true)](https://nodei.co/npm/iobroker.elegoo-centauri-carbon/)
 
-### Network Setup
+## Elegoo Centauri Carbon 3D Printer Adapter for ioBroker
 
-1. Ensure your Elegoo Centauri Carbon is connected to your local network
-1. Note the printer’s IP address (check printer display or router admin panel)
-1. Verify that your ioBroker server can reach the printer’s IP address
+This adapter enables monitoring and control of the Elegoo Centauri Carbon 3D printer through ioBroker using the SDCP (Simple Device Communication Protocol) over WebSocket.
 
-## Installation Methods
+## Features
 
-### Method 1: From ioBroker Admin Interface (Recommended when published)
+### Monitoring
 
-1. Open your ioBroker Admin interface
-1. Go to the “Adapters” tab
-1. Search for “elegoo-centauri-carbon”
-1. Click the “+” button to install
-1. Wait for installation to complete
+- **Real-time Status**: Current print status, progress, layer information
+- **Temperature Monitoring**: Hotbed, nozzle, and enclosure temperatures with targets
+- **Position Tracking**: X, Y, Z coordinates and Z-offset
+- **Fan Speed Monitoring**: Model fan, auxiliary fan, and box fan speeds
+- **Lighting Status**: RGB lighting and secondary light status
+- **Connection Status**: Real-time connection monitoring with automatic reconnection
 
-### Method 2: From GitHub (Development/Testing)
+### Control
 
-#### Option A: Using ioBroker CLI
+- **Print Control**: Start, pause, resume, and cancel print jobs
+- **Status Requests**: Manual status updates
+- **Light Control**: Toggle printer lighting
+- **File Selection**: Specify files for printing
+
+### Data Points
+
+#### Connection
+
+- `info.connection` - Connection status to printer
+
+#### Temperature
+
+- `temperature.hotbed` - Current hotbed temperature (°C)
+- `temperature.nozzle` - Current nozzle temperature (°C)
+- `temperature.box` - Current enclosure temperature (°C)
+- `temperature.hotbed_target` - Target hotbed temperature (°C)
+- `temperature.nozzle_target` - Target nozzle temperature (°C)
+- `temperature.box_target` - Target enclosure temperature (°C)
+
+#### Print Information
+
+- `print.status` - Numeric print status code
+- `print.status_text` - Human-readable status text
+- `print.progress` - Print progress percentage
+- `print.current_layer` - Current printing layer
+- `print.total_layers` - Total number of layers
+- `print.filename` - Currently printing file
+- `print.print_speed` - Print speed percentage
+- `print.current_ticks` - Current time ticks
+- `print.total_ticks` - Total estimated time ticks
+
+#### Position
+
+- `position.x` - X-axis position (mm)
+- `position.y` - Y-axis position (mm)
+- `position.z` - Z-axis position (mm)
+- `position.z_offset` - Z-offset value (mm)
+
+#### Fan Speeds
+
+- `fans.model_fan` - Model cooling fan speed (%)
+- `fans.auxiliary_fan` - Auxiliary fan speed (%)
+- `fans.box_fan` - Enclosure fan speed (%)
+
+#### Lighting
+
+- `lighting.second_light` - Secondary light status (on/off)
+- `lighting.rgb_r` - RGB red component (0-255)
+- `lighting.rgb_g` - RGB green component (0-255)
+- `lighting.rgb_b` - RGB blue component (0-255)
+
+#### Camera
+
+- `camera.stream_url` - MJPEG camera stream URL
+- `camera.stream_enabled` - Camera stream status (on/off)
+- `camera.timelapse_status` - Timelapse recording status
+
+#### Statistics
+
+- `stats.total_print_time` - Total printer usage time (hours)
+- `stats.remaining_print_time` - Estimated remaining print time (hours)
+- `stats.remaining_layers` - Number of layers remaining
+- `stats.print_error` - Current print error (if any)
+- `stats.release_film_status` - Release film condition
+- `stats.uv_led_temp` - UV LED temperature (°C)
+
+#### Network Discovery
+
+- `discovery.auto_discovered` - JSON list of discovered printers on network
+- `discovery.last_scan` - Timestamp of last network discovery scan
+
+#### Alerts and Notifications
+
+- `alerts.print_complete` - Print completion alert (boolean)
+- `alerts.print_paused` - Print paused alert (boolean)
+- `alerts.print_error` - Print error/failure alert (boolean)
+- `alerts.bed_cooled` - Bed cooled down alert (≤40°C)
+- `alerts.connection_lost` - Connection lost alert (boolean)
+- `alerts.last_alert` - Most recent alert message with timestamp
+- `alerts.alert_count` - Total number of alerts triggered
+
+#### Control Commands
+
+- `control.start_print` - Start print job (requires file in `control.print_file`)
+- `control.pause_print` - Pause current print
+- `control.resume_print` - Resume paused print
+- `control.cancel_print` - Cancel current print
+- `control.toggle_light` - Toggle printer lighting
+- `control.enable_camera` - Enable camera streaming
+- `control.disable_camera` - Disable camera streaming
+- `control.discover_printers` - Trigger network discovery scan
+- `control.clear_alerts` - Clear all active alerts
+- `control.request_status` - Request immediate status update
+- `control.print_file` - File path for printing (e.g., “model.gcode” or “/local/model.gcode”)
+
+## Installation
+
+### From npm (when published)
 
 ```bash
-# Navigate to ioBroker directory
+npm install iobroker.elegoo-centauri-carbon
+```
+
+### From GitHub
+
+```bash
 cd /opt/iobroker
-
-# Install from GitHub
-iobroker install https://github.com/tholterhus/iobroker.elegoo-centauri-carbon.git
-
-# Or using npm
 npm install https://github.com/tholterhus/iobroker.elegoo-centauri-carbon.git
-```
-
-#### Option B: Manual Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/tholterhus/iobroker.elegoo-centauri-carbon.git
-
-# Navigate to the directory
-cd iobroker.elegoo-centauri-carbon
-
-# Install dependencies
-npm install
-
-# Build (if needed)
-npm run build
-
-# Link to ioBroker (Linux/macOS)
-cd /opt/iobroker
-npm install ./path/to/iobroker.elegoo-centauri-carbon
-
-# Or copy to node_modules (Windows)
-# Copy the entire folder to /opt/iobroker/node_modules/iobroker.elegoo-centauri-carbon
-```
-
-### Method 3: Development Setup
-
-For developers who want to contribute or modify the adapter:
-
-```bash
-# Clone the repository
-git clone https://github.com/tholterhus/iobroker.elegoo-centauri-carbon.git
-cd iobroker.elegoo-centauri-carbon
-
-# Install dependencies
-npm install
-
-# Install development dependencies
-npm install --only=dev
-
-# Run tests
-npm test
-
-# Start in development mode
-npm start
 ```
 
 ## Configuration
 
-### Initial Setup
+### Basic Setup
 
-1. **Create Adapter Instance**
-- Open ioBroker Admin interface
-- Go to “Instances” tab
-- Click the “+” button next to “elegoo-centauri-carbon”
-- A new instance will be created
-1. **Configure Connection**
-- Click the wrench icon next to the new instance
-- Enter your printer’s IP address (e.g., `192.168.1.100`)
-- Adjust poll interval if needed (default: 10000ms)
-- Set reconnection interval (default: 30000ms)
-- Enable debug logging if troubleshooting is needed
-1. **Test Connection**
-- Use the “Test Connection” button in the admin interface
-- Check the logs for connection status
-- Verify that the connection indicator shows “Connected”
-1. **Save and Start**
-- Click “Save” to apply configuration
-- Start the adapter instance
-- Monitor logs for any error messages
+1. Install the adapter
+1. Create a new instance
+1. Configure the printer’s IP address in the adapter settings (default example: 192.168.178.34)
+1. Enable auto-discovery to scan for printers on your network (optional)
+1. Enable alerts for automated notifications
+1. Adjust poll interval if needed (default: 10 seconds)
+1. Save and start the adapter
 
-### Configuration Parameters
+### Network Discovery
 
-|Parameter             |Description                |Default        |Range/Options     |
-|----------------------|---------------------------|---------------|------------------|
-|**host**              |Printer IP address         |`192.168.1.100`|Valid IPv4 address|
-|**pollInterval**      |Status update interval (ms)|`10000`        |1000-300000       |
-|**reconnectInterval** |Reconnection delay (ms)    |`30000`        |5000-300000       |
-|**enableDebugLogging**|Enable detailed logging    |`false`        |true/false        |
+The adapter can automatically discover Elegoo Centauri Carbon printers on your local network:
 
-### Network Configuration
+1. Enable “Network Auto-Discovery” in adapter settings
+1. Use the “Discover Network Printers” button for manual scans
+1. Found printers will be listed in `discovery.auto_discovered`
+1. Select discovered printers directly from the admin interface
 
-#### Firewall Settings
+### Alert System
 
-Ensure the following ports are accessible:
+Inspired by the centauri-carbon-monitor project, the adapter provides intelligent alerts:
 
-- **Port 80** (HTTP) - For WebSocket connection to printer
-- **Port 443** (HTTPS) - If printer uses HTTPS (rare)
+- **Print Complete**: Notifies when print jobs finish successfully
+- **Print Paused**: Alerts when prints are paused (manual or error)
+- **Print Error**: Immediate notification of print failures
+- **Bed Cooled**: Alert when print bed cools to 40°C after printing
+- **Connection Lost**: Notification when connection to printer is lost
+- **Auto-Clear**: Alerts automatically clear after 5 minutes (configurable)
 
-#### Router Configuration
+### Network Requirements
 
-- No special router configuration needed for local network access
-- Ensure both ioBroker and printer are on the same network segment
-- For remote access, configure port forwarding if needed (not recommended for security)
+- The Elegoo Centauri Carbon must be connected to your local network
+- **WebSocket**: The printer’s WebSocket server runs on **port 3030** at `/websocket`
+- **Camera Stream**: MJPEG camera stream typically available on port 8080
+- No authentication is required for the WebSocket connection
+- Ensure your ioBroker instance can reach the printer’s IP address
 
-## Verification
+### Printer Setup
 
-### Check Installation
+- Ensure your Elegoo Centauri Carbon is updated to firmware version 1.1.29 or compatible
+- The printer must be connected to the same network as your ioBroker instance
+- Enable network features on the printer if not already active
+- Camera must be connected and functional for video streaming features
 
-1. **Adapter Status**
-   
-   ```bash
-   # Check if adapter is installed
-   iobroker list adapters | grep elegoo-centauri-carbon
-   
-   # Check instance status
-   iobroker status
-   ```
-1. **Log Verification**
-   
-   ```bash
-   # View adapter logs
-   iobroker logs elegoo-centauri-carbon.0
-   
-   # Or check log file directly
-   tail -f /opt/iobroker/log/iobroker.log | grep elegoo-centauri-carbon
-   ```
-1. **Object Tree**
-- Open ioBroker Admin → Objects
-- Navigate to `elegoo-centauri-carbon.0`
-- Verify all objects are created:
-  - `info.connection`
-  - `temperature.*`
-  - `print.*`
-  - `position.*`
-  - `fans.*`
-  - `lighting.*`
-  - `control.*`
+## Usage
 
-### Test Functionality
+### Basic Monitoring
 
-1. **Connection Test**
-   
-   ```bash
-   # Test WebSocket connection manually (optional)
-   # Install wscat: npm install -g wscat
-   wscat -c ws://[PRINTER_IP]/websocket
-   # You should connect without authentication
-   ```
-1. **Status Updates**
-- Check that `info.connection` shows `true`
-- Verify temperature values are updating
-- Confirm print status is being reported correctly
-1. **Control Commands**
-- Set `control.request_status` to `true`
-- Check logs for command transmission
-- Verify printer responds with status update
+Once configured, the adapter will automatically:
 
-## Troubleshooting Installation
+- Connect to the printer via WebSocket
+- Request status updates at the configured interval
+- Update all data points with current printer information
+- Automatically reconnect if the connection is lost
 
-### Common Issues
+### Print Control
 
-#### 1. Installation Fails
+To start a print job:
 
-```bash
-# Clear npm cache
-npm cache clean --force
+1. Set the filename in `control.print_file` (e.g., “my_model.gcode”)
+1. Trigger `control.start_print` by setting it to `true`
 
-# Reinstall with verbose output
-npm install --verbose
+To control an active print:
 
-# Check Node.js version
-node --version  # Should be >= 14.0.0
+- Use `control.pause_print` to pause
+- Use `control.resume_print` to resume
+- Use `control.cancel_print` to cancel
+
+### Camera Integration
+
+To use the camera features:
+
+1. Enable camera integration in adapter settings
+1. Ensure camera is connected to your printer
+1. Use `control.enable_camera` to start the video stream
+1. The `camera.stream_url` will contain the MJPEG stream URL
+1. Access the stream directly via HTTP or integrate with VIS/other visualization tools
+
+**Common Camera URLs:**
+
+- `http://192.168.178.34:8080/video_feed` - Primary MJPEG stream
+- `http://192.168.178.34:8080/stream.mjpg` - Alternative stream endpoint
+- `http://192.168.178.34/video_feed` - Fallback URL
+
+### Network Discovery
+
+The adapter includes automatic printer discovery inspired by the OpenCentauri project:
+
+1. **Auto-Discovery**: Automatically scans network on startup
+1. **Manual Discovery**: Trigger scans via `control.discover_printers`
+1. **SDCP Validation**: Verifies printer compatibility during discovery
+1. **Multi-Printer Support**: Foundation for monitoring multiple printers
+
+**Discovery Process:**
+
+- Scans common network ranges (192.168.x.x, 10.x.x.x, etc.)
+- Tests WebSocket connections on port 3030
+- Validates SDCP protocol compatibility
+- Saves discovered printers in `discovery.auto_discovered`
+
+### Smart Alert System
+
+Based on the centauri-carbon-monitor functionality:
+
+```javascript
+// Print completion alert
+on({id: 'elegoo-centauri-carbon.0.alerts.print_complete', change: 'ne'}, (obj) => {
+    if (obj.state.val) {
+        // Send notification, play sound, etc.
+        sendTo('telegram', 'send', {text: 'Print job completed!'});
+    }
+});
+
+// Bed cooled down alert  
+on({id: 'elegoo-centauri-carbon.0.alerts.bed_cooled', change: 'ne'}, (obj) => {
+    if (obj.state.val) {
+        sendTo('pushover', 'send', {message: 'Print bed has cooled down'});
+    }
+});
 ```
 
-#### 2. Permission Issues (Linux)
+### Advanced Features
 
-```bash
-# Fix ownership
-sudo chown -R iobroker:iobroker /opt/iobroker/node_modules/iobroker.elegoo-centauri-carbon
+The adapter supports extended status monitoring including:
 
-# Fix permissions
-chmod -R 755 /opt/iobroker/node_modules/iobroker.elegoo-centauri-carbon
+- **Print Statistics**: Total runtime, remaining time calculations
+- **Error Reporting**: Detailed error codes and descriptions
+- **Film Status**: Release film condition monitoring
+- **UV LED Monitoring**: Temperature tracking for UV LED systems
+- **Enhanced Status Codes**: Support for 17+ different printer states
+
+### Status Codes
+
+The printer reports various status codes:
+
+- `0` - Idle (no print in progress)
+- `1` - Preparing
+- `2` - Starting
+- `3` - Printing
+- `4` - Paused (print paused by user or error)
+- `5` - Completed
+- `6` - Cancelled
+- `7` - Error
+- `8` - Preparing to Print (warming up, calibrating)
+- `9` - Starting Print (homing, priming)
+- `10` - Paused
+- `11` - Resuming
+- `12` - Cancelling
+- `13` - Printing (actively printing)
+- `14` - Print Complete
+- `15` - Print Failed
+- `16` - Heating
+- `17` - Cooling Down
+
+## SDCP Protocol
+
+This adapter implements the SDCP (Simple Device Communication Protocol) version 3.0 as used by the Elegoo Centauri Carbon. The protocol uses MQTT-like messaging over WebSocket connections.
+
+### Supported Commands
+
+- `0` - Request status update
+- `128` - Start print job
+- `129` - Pause print
+- `130` - Cancel print
+- `131` - Resume print
+- `386` - Enable/disable camera stream
+- `403` - Toggle lighting
+
+### WebSocket Endpoint
+
+The printer’s WebSocket server is available at:
+
+```
+ws://[PRINTER_IP]:3030/websocket
 ```
 
-#### 3. Dependencies Not Found
+*Example: ws://192.168.178.34:3030/websocket*
+
+### Connection Management
+
+- No authentication required
+- Connection timeout: 60 seconds of inactivity
+- Automatic reconnection with configurable interval
+- Ping/pong keepalive every 30 seconds
+
+## Troubleshooting
+
+### Connection Issues
+
+1. Verify the printer’s IP address is correct
+1. Ensure the printer is powered on and connected to the network
+1. Check that no firewall is blocking the connection
+1. Try pinging the printer’s IP address
+1. Verify the printer’s firmware supports SDCP
+
+### Status Not Updating
+
+1. Check the connection status in `info.connection`
+1. Verify the poll interval setting
+1. Look at the adapter logs for error messages
+1. Try manually requesting status with `control.request_status`
+
+### Print Commands Not Working
+
+1. Ensure the printer is in the correct state for the command
+1. Verify file paths are correct (use “/local/” prefix)
+1. Check that the file exists on the printer
+1. Monitor the adapter logs for command responses
+
+## Development
+
+### Prerequisites
+
+- Node.js 14.x or higher
+- ioBroker development environment
+
+### Building
 
 ```bash
-# Install missing dependencies
-cd /opt/iobroker/node_modules/iobroker.elegoo-centauri-carbon
 npm install
-
-# Or force reinstall all dependencies
-rm -rf node_modules package-lock.json
-npm install
+npm run build
+npm run test
 ```
 
-#### 4. Adapter Not Starting
+### Contributing
 
-- Check ioBroker logs: `iobroker logs`
-- Verify configuration is valid
-- Ensure printer IP is accessible
-- Check for port conflicts
+1. Fork the repository
+1. Create a feature branch
+1. Make your changes
+1. Add tests if applicable
+1. Submit a pull request
 
-#### 5. Connection Issues
+## Changelog
 
-- Ping the printer: `ping [PRINTER_IP]`
-- Check printer network settings
-- Verify printer firmware version
-- Test WebSocket manually with `wscat`
+### 1.0.0 (2025-08-19)
 
-### Getting Help
+- Initial release with comprehensive monitoring and control features
+- SDCP protocol implementation for Elegoo Centauri Carbon
+- WebSocket connection management with automatic reconnection
+- **Network Auto-Discovery**: Automatic detection of SDCP-compatible printers on local network (inspired by OpenCentauri project)
+- **Smart Alert System**: Automated notifications for print completion, errors, pauses, temperature events (inspired by centauri-carbon-monitor)
+- **Camera Integration**: Full MJPEG stream support with enable/disable controls
+- **Enhanced Status Monitoring**: 17+ printer status codes with intelligent change detection
+- **Temperature Alerts**: Notifications when bed cools down to 40°C after printing
+- **Advanced Statistics**: Total print time, remaining time estimates, UV LED monitoring
+- **Multi-language Support**: English, German, Russian, and 7 additional languages
+- **Comprehensive API**: 50+ data points for complete printer monitoring
+- **Professional Admin Interface**: Network discovery, camera settings, alert configuration
+- **SDCP Validation**: Automatic compatibility checking during connection
 
-1. **Check Logs First**
-- Enable debug logging in adapter configuration
-- Review logs for specific error messages
-- Note any recurring patterns
-1. **GitHub Issues**
-- Search existing issues: https://github.com/tholterhus/iobroker.elegoo-centauri-carbon/issues
-- Create new issue with:
-  - ioBroker version
-  - Node.js version
-  - Adapter version
-  - Complete error logs
-  - Printer firmware version
-1. **ioBroker Community**
-- ioBroker Forum: https://forum.iobroker.net
-- Discord: https://discord.gg/iobroker
+## License
 
-## Uninstallation
+MIT License
 
-### Remove Adapter Instance
+Copyright (c) 2025 [Your Name]
 
-```bash
-# Stop and delete instance
-iobroker stop elegoo-centauri-carbon.0
-iobroker del elegoo-centauri-carbon.0
-```
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-### Uninstall Adapter
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-```bash
-# Remove adapter
-iobroker uninstall elegoo-centauri-carbon
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
-# Or using npm
-npm uninstall iobroker.elegoo-centauri-carbon
-```
+## References
 
-### Clean Removal
-
-```bash
-# Remove all traces (Linux/macOS)
-rm -rf /opt/iobroker/node_modules/iobroker.elegoo-centauri-carbon
-rm -rf /opt/iobroker/iobroker-data/files/elegoo-centauri-carbon.admin
-```
-
-## Next Steps
-
-After successful installation:
-
-1. Review the <README.md> for usage instructions
-1. Explore available data points in the Objects tab
-1. Set up visualizations using ioBroker VIS or other tools
-1. Configure notifications for print completion/errors
-1. Create automation rules based on printer status
+- [OpenCentauri Documentation](https://opencentauri.github.io/OpenCentauri/) - Comprehensive SDCP protocol documentation
+- [Centauri Carbon Monitor](https://github.com/sheffieldnikki/centauri-carbon-monitor) - Python monitoring script inspiration
+- [SDCP Protocol Documentation](https://github.com/WalkerFrederick/sdcp-centauri-carbon) - SDCP implementation details
+- [Elegoo Centauri Carbon Manual](https://www.elegoo.com) - Official printer documentation
+- [ioBroker Adapter Development](https://github.com/ioBroker/ioBroker.template) - ioBroker development guidelines
 
 ## Support
 
-For installation support:
+For support and questions:
 
-- GitHub Issues: https://github.com/tholterhus/iobroker.elegoo-centauri-carbon/issues
-- ioBroker Forum: https://forum.iobroker.net
-- Documentation: https://github.com/tholterhus/iobroker.elegoo-centauri-carbon/wiki
+- Create an issue on [GitHub](https://github.com/tholterhus/iobroker.elegoo-centauri-carbon/issues)
+- Visit the [ioBroker Forum](https://forum.iobroker.net)
+- Check the [OpenCentauri Discord](https://discord.gg/t6Cft3wNJ3) for SDCP protocol discussions
+- Review the [ioBroker Documentation](https://www.iobroker.net)
