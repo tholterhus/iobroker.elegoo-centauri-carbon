@@ -61,10 +61,23 @@
         color: #26a69a !important;
     }
     
-    /* Fix helper text visibility */
+    /* Fix helper text and description visibility */
     .helper-text {
-        color: #757575 !important;
-        font-size: 12px;
+        color: #666 !important;
+        font-size: 12px !important;
+        font-weight: normal !important;
+    }
+    
+    /* Fix paragraph text visibility */
+    .collapsible-body p {
+        color: #424242 !important;
+        line-height: 1.5;
+    }
+    
+    /* Fix description text in cards */
+    .card-panel p,
+    .collection-item p {
+        color: #424242 !important;
     }
     
     /* Fix checkbox visibility */
@@ -144,13 +157,13 @@
                     <div class="row">
                         <div class="input-field col s12 m6">
                             <input class="value" id="pollInterval" type="number" min="1000" max="300000" data-default="10000"/>
-                            <label for="pollInterval" class="translate">Poll Interval (ms)</label>
-                            <span class="helper-text translate">How often to request status updates</span>
+                            <label for="pollInterval" class="translate">Poll Interval (seconds)</label>
+                            <span class="helper-text translate">How often to request status updates (10-300 seconds)</span>
                         </div>
                         <div class="input-field col s12 m6">
                             <input class="value" id="reconnectInterval" type="number" min="5000" max="300000" data-default="30000"/>
-                            <label for="reconnectInterval" class="translate">Reconnect Interval (ms)</label>
-                            <span class="helper-text translate">Wait time before reconnection attempts</span>
+                            <label for="reconnectInterval" class="translate">Reconnect Interval (seconds)</label>
+                            <span class="helper-text translate">Wait time before reconnection attempts (5-300 seconds)</span>
                         </div>
                     </div>
                 </div>
@@ -197,31 +210,18 @@
             <li>
                 <div class="collapsible-header">
                     <i class="material-icons">search</i>
-                    <span class="translate">Network Discovery</span>
+                    <span class="translate">Connection Test</span>
                 </div>
                 <div class="collapsible-body">
                     <div class="row">
-                        <div class="col s12 m6">
-                            <p>
-                                <label>
-                                    <input type="checkbox" class="value" id="enableAutoDiscovery" data-default="true"/>
-                                    <span class="translate">Enable Auto-Discovery</span>
-                                </label>
-                            </p>
-                            <span class="helper-text translate">Automatically discover printers on startup</span>
-                        </div>
-                        <div class="col s12 m6">
-                            <button id="manual-discovery" class="btn waves-effect waves-light" type="button">
-                                <i class="material-icons left">search</i>
-                                <span class="translate">Scan Network Now</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="row">
                         <div class="col s12">
-                            <div id="discovery-results" class="card-panel" style="display: none;">
-                                <h6 class="translate">Discovery Results:</h6>
-                                <div id="discovered-list"></div>
+                            <p class="translate">Test the connection to verify your printer settings.</p>
+                            <button id="test-connection" class="btn waves-effect waves-light" type="button">
+                                <i class="material-icons left">play_arrow</i>
+                                <span class="translate">Test Connection</span>
+                            </button>
+                            <div id="test-result" class="card-panel" style="display: none; margin-top: 10px;">
+                                <span id="test-message"></span>
                             </div>
                         </div>
                     </div>
@@ -246,22 +246,31 @@
                             <span class="helper-text translate">Enable automatic alert generation</span>
                         </div>
                         <div class="input-field col s12 m6">
-                            <input class="value" id="alertClearTimeout" type="number" min="60000" max="3600000" data-default="300000"/>
-                            <label for="alertClearTimeout" class="translate">Alert Auto-Clear (ms)</label>
-                            <span class="helper-text translate">Time before alerts automatically clear</span>
+                            <input class="value" id="alertClearTimeout" type="number" min="60" max="3600" data-default="300"/>
+                            <label for="alertClearTimeout" class="translate">Alert Auto-Clear (seconds)</label>
+                            <span class="helper-text translate">Time before alerts automatically clear (60-3600 seconds)</span>
                         </div>
                     </div>
                 </div>
             </li>
 
-            <!-- Advanced Settings -->
+            <!-- Test Connection -->
             <li>
                 <div class="collapsible-header">
-                    <i class="material-icons">settings</i>
+                    <i class="material-icons">settings_ethernet</i>
                     <span class="translate">Advanced Settings</span>
                 </div>
                 <div class="collapsible-body">
                     <div class="row">
+                        <div class="col s12 m6">
+                            <p>
+                                <label>
+                                    <input type="checkbox" class="value" id="enableAutoDiscovery" data-default="true"/>
+                                    <span class="translate">Enable Auto-Discovery</span>
+                                </label>
+                            </p>
+                            <span class="helper-text translate">Test printer connection on startup</span>
+                        </div>
                         <div class="col s12 m6">
                             <p>
                                 <label>
@@ -273,19 +282,7 @@
                         </div>
                     </div>
                 </div>
-            </li>
-
-            <!-- Test Connection -->
-            <li>
-                <div class="collapsible-header">
-                    <i class="material-icons">settings_ethernet</i>
-                    <span class="translate">Connection Test</span>
-                </div>
-                <div class="collapsible-body">
-                    <div class="row">
-                        <div class="col s12">
-                            <p class="translate">Test the connection to your printer to verify settings.</p>
-                            <button id="test-connection" class="btn waves-effect waves-light" type="button">
+            </li>" type="button">
                                 <i class="material-icons left">play_arrow</i>
                                 <span class="translate">Test Connection</span>
                             </button>
@@ -593,65 +590,6 @@
         $message.text(message);
     }
 
-    // Run network discovery
-    function runNetworkDiscovery() {
-        const $button = $('#manual-discovery');
-        const $results = $('#discovery-results');
-        const $list = $('#discovered-list');
-        
-        // Disable button and show loading
-        $button.addClass('disabled');
-        $button.find('span').text('Scanning...');
-        
-        setTimeout(() => {
-            // Mock discovered printers for demo
-            const mockPrinters = [
-                { ip: '192.168.178.34', port: 3030, mainboardId: 'ABC123' }
-            ];
-            
-            if (mockPrinters.length > 0) {
-                let html = '<div class="collection">';
-                mockPrinters.forEach(printer => {
-                    html += `<div class="collection-item">
-                        <div>
-                            <strong>${printer.ip}:${printer.port}</strong>
-                            ${printer.mainboardId ? `<br><small>ID: ${printer.mainboardId}</small>` : ''}
-                            <a href="#!" class="secondary-content btn-small waves-effect waves-light" onclick="selectPrinter('${printer.ip}', ${printer.port})">
-                                Use This Printer
-                            </a>
-                        </div>
-                    </div>`;
-                });
-                html += '</div>';
-                
-                $list.html(html);
-                $results.show();
-                M.toast({html: `Found ${mockPrinters.length} printer(s)`});
-            } else {
-                $list.html('<p>No printers discovered on the network.</p>');
-                $results.show();
-                M.toast({html: 'No printers found'});
-            }
-            
-            // Re-enable button
-            $button.removeClass('disabled');
-            $button.find('span').text('Scan Network Now');
-        }, 3000);
-    }
-
-    // Select discovered printer
-    function selectPrinter(ip, port) {
-        $('#host').val(ip);
-        $('#port').val(port);
-        M.updateTextFields();
-        
-        // Trigger change event
-        $('#host').trigger('input');
-        $('#port').trigger('input');
-        
-        M.toast({html: `Selected printer at ${ip}:${port}`});
-    }
-
     // Load settings from ioBroker
     function load(settings, onChange_) {
         if (!settings) return;
@@ -666,6 +604,13 @@
             // Use default value if setting is undefined
             if (value === undefined) {
                 value = $this.data('default');
+            }
+            
+            // Convert milliseconds to seconds for display
+            if ($this.attr('type') === 'number' && (id === 'pollInterval' || id === 'reconnectInterval' || id === 'alertClearTimeout')) {
+                if (typeof value === 'number') {
+                    value = Math.floor(value / 1000);
+                }
             }
             
             if ($this.attr('type') === 'checkbox') {
@@ -697,8 +642,16 @@
             if ($this.attr('type') === 'checkbox') {
                 obj[id] = $this.prop('checked');
             } else if ($this.attr('type') === 'number') {
-                const value = parseInt($this.val(), 10);
-                obj[id] = isNaN(value) ? $this.data('default') : value;
+                let value = parseInt($this.val(), 10);
+                
+                // Convert seconds to milliseconds for internal storage
+                if (id === 'pollInterval' || id === 'reconnectInterval') {
+                    value = value * 1000;
+                } else if (id === 'alertClearTimeout') {
+                    value = value * 1000;
+                }
+                
+                obj[id] = isNaN(value) ? ($this.data('default') * (id.includes('Interval') || id.includes('Timeout') ? 1000 : 1)) : value;
             } else {
                 obj[id] = $this.val() || $this.data('default');
             }
