@@ -2,14 +2,14 @@
 
 - ioBroker Elegoo Centauri Carbon Adapter
 - Monitors Elegoo Centauri Carbon 3D printer via SDCP protocol
-  */
-'use strict';
+**/
+‘use strict’;
 
-const utils = require('@iobroker/adapter-core');
-const WebSocket = require('ws');
-const { v4: uuidv4 } = require('uuid');
-const dgram = require('dgram');
-const os = require('os');
+const utils = require(’@iobroker/adapter-core’);
+const WebSocket = require(‘ws’);
+const { v4: uuidv4 } = require(‘uuid’);
+const dgram = require(‘dgram’);
+const os = require(‘os’);
 
 class ElegooCentauriCarbon extends utils.Adapter {
 
@@ -255,7 +255,7 @@ async initializeObjects() {
         native: {}
     });
 
-    // Fan speeds
+    // Fan speeds (now writable for control)
     await this.setObjectNotExistsAsync('fans', {
         type: 'channel',
         common: {
@@ -276,10 +276,12 @@ async initializeObjects() {
             common: {
                 name: fan.name,
                 type: 'number',
-                role: 'value',
+                role: 'level.dimmer',
                 unit: fan.unit,
+                min: 0,
+                max: 100,
                 read: true,
-                write: false,
+                write: true,
             },
             native: {}
         });
@@ -340,11 +342,9 @@ async initializeObjects() {
     });
 
     const statsStates = [
-        { id: 'total_print_time', name: 'Total Print Time', type: 'number', role: 'value.time', unit: 'hours' },
+        { id: 'total_print_time', name: 'Total Print Time', type: 'string', role: 'text', unit: '' },
         { id: 'print_error', name: 'Print Error', type: 'string', role: 'text' },
-        { id: 'release_film_status', name: 'Release Film Status', type: 'string', role: 'text' },
-        { id: 'uv_led_temp', name: 'UV LED Temperature', type: 'number', role: 'value.temperature', unit: '°C' },
-        { id: 'remaining_print_time', name: 'Remaining Print Time', type: 'number', role: 'value.time', unit: 'hours' },
+        { id: 'remaining_print_time', name: 'Remaining Print Time', type: 'string', role: 'text', unit: '' },
         { id: 'remaining_layers', name: 'Remaining Layers', type: 'number', role: 'value' }
     ];
 
@@ -415,9 +415,7 @@ async initializeObjects() {
         { id: 'cancel_print', name: 'Cancel Print', role: 'button.stop' },
         { id: 'toggle_light', name: 'Toggle Light', role: 'button' },
         { id: 'request_status', name: 'Request Status Update', role: 'button' },
-        { id: 'enable_camera', name: 'Enable Camera Stream', role: 'button' },
-        { id: 'disable_camera', name: 'Disable Camera Stream', role: 'button' },
-        { id: 'discover_printers', name: 'Discover Network Printers', role: 'button' },
+        { id: 'toggle_camera', name: 'Toggle Camera Stream', role: 'button' },
         { id: 'clear_alerts', name: 'Clear All Alerts', role: 'button' }
     ];
 
@@ -546,29 +544,17 @@ async discoverPrinters() {
     this.log.info('Starting network discovery for Elegoo printers...');
     
     const discoveredPrinters = [];
-    const networkInterfaces = os.networkInterfaces();
-    const promises = [];
-
-    // Scan common network ranges
-    for (const [interfaceName, addresses] of Object.entries(networkInterfaces)) {
-        if (!addresses) continue;
-        
-        for (const addr of addresses) {
-            if (addr.family === 'IPv4' && !addr.internal) {
-                const networkBase = addr.address.split('.').slice(0, 3).join('.');
-                promises.push(this.scanNetworkRange(networkBase, discoveredPrinters));
-            }
-        }
-    }
+    const host = this.config.host || '192.168.178.34';
+    
+    // Test only the configured host instead of scanning entire network
+    await this.testPrinterConnection(host, discoveredPrinters);
 
     try {
-        await Promise.all(promises);
-        
         if (discoveredPrinters.length > 0) {
             this.log.info(`Discovered ${discoveredPrinters.length} Elegoo printers`);
             await this.setState('discovery.auto_discovered', JSON.stringify(discoveredPrinters), true);
         } else {
-            this.log.info('No Elegoo printers discovered on network');
+            this.log.info('No Elegoo printers discovered');
             await this.setState('discovery.auto_discovered', '[]', true);
         }
         
@@ -580,18 +566,17 @@ async discoverPrinters() {
 }
 
 /**
- * Scan a network range for SDCP-compatible printers
+ * Convert ticks to human readable time format
  */
-async scanNetworkRange(networkBase, discoveredPrinters) {
-    const scanPromises = [];
+formatTime(ticks) {
+    if (!ticks || ticks === 0) return '00:00:00';
     
-    // Scan common IP range (1-254)
-    for (let i = 1; i <= 254; i++) {
-        const ip = `${networkBase}.${i}`;
-        scanPromises.push(this.testPrinterConnection(ip, discoveredPrinters));
-    }
-
-    await Promise.allSettled(scanPromises);
+    const totalSeconds = Math.floor(ticks / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
 /**
@@ -890,21 +875,12 @@ async updateStates(status) {
 
         // Additional statistics (if available)
         if (status.TotalPrintTime) {
-            // Convert from milliseconds to hours
-            const totalHours = Math.round((status.TotalPrintTime / (1000 * 60 * 60)) * 100) / 100;
-            await this.setState('stats.total_print_time', totalHours, true);
-        }
-
-        if (status.UVLedTemp !== undefined) {
-            await this.setState('stats.uv_led_temp', status.UVLedTemp, true);
+            const totalTimeFormatted = this.formatTime(status.TotalPrintTime);
+            await this.setState('stats.total_print_time', totalTimeFormatted, true);
         }
 
         if (status.PrintError) {
             await this.setState('stats.print_error', status.PrintError, true);
-        }
-
-        if (status.ReleaseFilmStatus) {
-            await this.setState('stats.release_film_status', status.ReleaseFilmStatus, true);
         }
 
         // Calculate remaining time and layers if print info is available
@@ -918,9 +894,8 @@ async updateStates(status) {
             // Calculate remaining time (rough estimate based on progress)
             if (printInfo.TotalTicks > 0 && printInfo.CurrentTicks > 0) {
                 const remainingTicks = printInfo.TotalTicks - printInfo.CurrentTicks;
-                // Assuming ticks are in milliseconds, convert to hours
-                const remainingHours = Math.round((remainingTicks / (1000 * 60 * 60)) * 100) / 100;
-                await this.setState('stats.remaining_print_time', remainingHours, true);
+                const remainingTimeFormatted = this.formatTime(remainingTicks);
+                await this.setState('stats.remaining_print_time', remainingTimeFormatted, true);
             }
         }
             const printInfo = status.PrintInfo;
@@ -933,6 +908,7 @@ async updateStates(status) {
             await this.setState('print.print_speed', printInfo.PrintSpeedPct, true);
             await this.setState('print.current_ticks', printInfo.CurrentTicks, true);
             await this.setState('print.total_ticks', printInfo.TotalTicks, true);
+    
 
     } catch (error) {
         this.log.error(`Error updating states: ${error.message}`);
@@ -1002,50 +978,92 @@ requestStatus() {
  * Handle state changes for control commands
  */
 onStateChange(id, state) {
-    if (state && state.ack === false && state.val === true) {
+    if (state && state.ack === false) {
         const stateName = id.split('.').pop();
 
-        switch (stateName) {
-            case 'request_status':
-                this.requestStatus();
-                break;
-            case 'pause_print':
-                this.sendCommand(129);
-                break;
-            case 'resume_print':
-                this.sendCommand(131);
-                break;
-            case 'cancel_print':
-                this.sendCommand(130);
-                break;
-            case 'toggle_light':
-                this.sendCommand(403, {
-                    LightStatus: {
-                        SecondLight: true,
-                        RgbLight: [0, 0, 0]
-                    }
-                });
-                break;
-            case 'start_print':
-                this.handleStartPrint();
-                break;
-            case 'enable_camera':
-                this.enableCameraStream();
-                break;
-            case 'disable_camera':
-                this.disableCameraStream();
-                break;
-            case 'discover_printers':
-                this.discoverPrinters();
-                break;
-            case 'clear_alerts':
-                this.clearAllAlerts();
-                break;
+        // Handle button presses
+        if (state.val === true) {
+            switch (stateName) {
+                case 'request_status':
+                    this.requestStatus();
+                    break;
+                case 'pause_print':
+                    this.sendCommand(129);
+                    break;
+                case 'resume_print':
+                    this.sendCommand(131);
+                    break;
+                case 'cancel_print':
+                    this.sendCommand(130);
+                    break;
+                case 'toggle_light':
+                    this.toggleLight();
+                    break;
+                case 'start_print':
+                    this.handleStartPrint();
+                    break;
+                case 'toggle_camera':
+                    this.toggleCamera();
+                    break;
+                case 'clear_alerts':
+                    this.clearAllAlerts();
+                    break;
+            }
+
+            // Reset button state
+            this.setState(id, false, true);
         }
 
-        // Reset button state
-        this.setState(id, false, true);
+        // Handle fan speed changes
+        if (stateName.includes('_fan') && typeof state.val === 'number') {
+            this.setFanSpeed(stateName, state.val);
+        }
     }
+}
+
+/**
+ * Toggle light on/off
+ */
+async toggleLight() {
+    try {
+        const currentLightState = await this.getStateAsync('lighting.second_light');
+        const isOn = currentLightState?.val === true;
+        
+        this.sendCommand(403, {
+            LightStatus: {
+                SecondLight: !isOn,
+                RgbLight: [0, 0, 0]
+            }
+        });
+        
+        this.log.info(`Light toggled ${isOn ? 'off' : 'on'}`);
+    } catch (error) {
+        this.log.error(`Error toggling light: ${error.message}`);
+    }
+}
+
+/**
+ * Toggle camera on/off
+ */
+async toggleCamera() {
+    try {
+        const currentCameraState = await this.getStateAsync('camera.stream_enabled');
+        const isEnabled = currentCameraState?.val === true;
+        
+        this.sendCommand(386, { Enable: isEnabled ? 0 : 1 });
+        this.log.info(`Camera ${isEnabled ? 'disabled' : 'enabled'}`);
+    } catch (error) {
+        this.log.error(`Error toggling camera: ${error.message}`);
+    }
+}
+
+/**
+ * Set fan speed
+ */
+setFanSpeed(fanType, speed) {
+    // Note: This would need the appropriate SDCP command for fan control
+    // Currently, fan speeds appear to be read-only in the SDCP protocol
+    this.log.warn(`Fan speed control for ${fanType} not yet implemented in SDCP protocol`);
 }
 
 /**
