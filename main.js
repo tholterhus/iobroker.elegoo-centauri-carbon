@@ -954,7 +954,11 @@ getStatusText(statusCode) {
         14: 'Print Complete',
         15: 'Print Failed',
         16: 'Heating',
-        17: 'Cooling Down'
+        17: 'Cooling Down',
+        18: 'Loading',
+        19: 'Loading',
+        20: 'Loading',
+        21: 'Loading'
     };
     return statusMap[statusCode] || `Unknown Status (${statusCode})`;
 }
