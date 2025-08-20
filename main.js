@@ -917,23 +917,40 @@ async updateStates(status) {
 
 /**
  * Convert status code to human-readable text
+     IDLE = 0
+    HOMING = 1
+    DROPPING = 2
+    PRINTING = 3
+    LIFTING = 4
+    PAUSING = 5
+    PAUSED = 6
+    STOPPING = 7
+    STOPPED = 8
+    COMPLETE = 9
+    FILE_CHECKING = 10
+    RECOVERY = 12
+    LOADING = 15
+            if status_int in [16, 18, 19, 20, 21]:
+            return cls.LOADING
+        if status_int == 13:
+            return cls.PRINTING
  */
 getStatusText(statusCode) {
     const statusMap = {
         0: 'Idle',
-        1: 'Preparing',
-        2: 'Starting',
+        1: 'Homing',
+        2: 'Dripping',
         3: 'Printing',
-        4: 'Paused',
-        5: 'Completed',
-        6: 'Cancelled',
-        7: 'Error',
-        8: 'Preparing to Print',
-        9: 'Starting Print', 
-        10: 'Paused',
+        4: 'Lifting',
+        5: 'Pausing',
+        6: 'Paused',
+        7: 'Stopping',
+        8: 'Stopped',
+        9: 'Print complete', 
+        10: 'File checking',
         11: 'Resuming',
-        12: 'Cancelling',
-        13: 'Printing (Active)',
+        12: 'Recovery',
+        13: 'Printing',
         14: 'Print Complete',
         15: 'Print Failed',
         16: 'Heating',
