@@ -864,9 +864,6 @@ async updateStates(status) {
         // Lighting
         if (status.LightStatus) {
             await this.setState('lighting.second_light', status.LightStatus.SecondLight === 1, true);
-        // Lighting
-        if (status.LightStatus) {
-            await this.setState('lighting.second_light', status.LightStatus.SecondLight === 1, true);
             if (status.LightStatus.RgbLight && status.LightStatus.RgbLight.length >= 3) {
                 await this.setState('lighting.rgb_r', status.LightStatus.RgbLight[0], true);
                 await this.setState('lighting.rgb_g', status.LightStatus.RgbLight[1], true);
