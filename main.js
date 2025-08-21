@@ -573,7 +573,7 @@ async discoverPrinters() {
 formatTime(ticks) {
     if (!ticks || ticks === 0) return '00:00:00';
     
-    const totalSeconds = Math.floor(ticks / 1000);
+    const totalSeconds = ticks;
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
