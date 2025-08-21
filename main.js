@@ -2,7 +2,7 @@
 
 - ioBroker Elegoo Centauri Carbon Adapter
 - Monitors Elegoo Centauri Carbon 3D printer via SDCP protocol
-**/
+  */
 'use strict';
 
 const utils = require('@iobroker/adapter-core');
@@ -199,7 +199,9 @@ async initializeObjects() {
         { id: 'filename', name: 'Current File', type: 'string', role: 'text' },
         { id: 'print_speed', name: 'Print Speed %', type: 'number', role: 'value', unit: '%' },
         { id: 'current_ticks', name: 'Current Ticks', type: 'number', role: 'value' },
-        { id: 'total_ticks', name: 'Total Ticks', type: 'number', role: 'value' }
+        { id: 'current_ticks_formatted', name: 'Current Time (hh:mm:ss)', type: 'string', role: 'text' },
+        { id: 'total_ticks', name: 'Total Ticks', type: 'number', role: 'value' },
+        { id: 'total_ticks_formatted', name: 'Total Time (hh:mm:ss)', type: 'string', role: 'text' }
     ];
 
     for (const state of printStates) {
@@ -343,6 +345,7 @@ async initializeObjects() {
 
     const statsStates = [
         { id: 'total_print_time', name: 'Total Print Time', type: 'string', role: 'text', unit: '' },
+        { id: 'total_print_time_formatted', name: 'Total Print Time (hh:mm:ss)', type: 'string', role: 'text', unit: '' },
         { id: 'print_error', name: 'Print Error', type: 'string', role: 'text' },
         { id: 'remaining_print_time', name: 'Remaining Print Time', type: 'string', role: 'text', unit: '' },
         { id: 'remaining_layers', name: 'Remaining Layers', type: 'number', role: 'value' }
@@ -861,6 +864,9 @@ async updateStates(status) {
         // Lighting
         if (status.LightStatus) {
             await this.setState('lighting.second_light', status.LightStatus.SecondLight === 1, true);
+        // Lighting
+        if (status.LightStatus) {
+            await this.setState('lighting.second_light', status.LightStatus.SecondLight === 1, true);
             if (status.LightStatus.RgbLight && status.LightStatus.RgbLight.length >= 3) {
                 await this.setState('lighting.rgb_r', status.LightStatus.RgbLight[0], true);
                 await this.setState('lighting.rgb_g', status.LightStatus.RgbLight[1], true);
@@ -868,6 +874,246 @@ async updateStates(status) {
             }
         }
 
+        // Camera and timelapse
+        if (status.TimeLapseStatus !== undefined) {
+            await this.setState('camera.timelapse_status', status.TimeLapseStatus, true);
+        }
+
+        // Additional statistics (if available)
+        if (status.TotalPrintTime) {
+            const totalTimeFormatted = this.formatTime(status.TotalPrintTime);
+            await this.setState('stats.total_print_time', status.TotalPrintTime, true);
+            await this.setState('stats.total_print_time_formatted', totalTimeFormatted, true);
+        }
+
+        if (status.PrintError) {
+            await this.setState('stats.print_error', status.PrintError, true);
+        }
+
+        // Calculate remaining time and layers if print info is available
+        if (status.PrintInfo) {
+            const printInfo = status.PrintInfo;
+            
+            // Calculate remaining layers
+            const remainingLayers = printInfo.TotalLayer - printInfo.CurrentLayer;
+            await this.setState('stats.remaining_layers', remainingLayers, true);
+            
+            // Calculate remaining time (rough estimate based on progress)
+            if (printInfo.TotalTicks > 0 && printInfo.CurrentTicks > 0) {
+                const remainingTicks = printInfo.TotalTicks - printInfo.CurrentTicks;
+                const remainingTimeFormatted = this.formatTime(remainingTicks);
+                await this.setState('stats.remaining_print_time', remainingTimeFormatted, true);
+            }
+        }
+
+        // Print information
+        if (status.PrintInfo) {
+            const printInfo = status.PrintInfo;
+            await this.setState('print.status', printInfo.Status, true);
+            await this.setState('print.status_text', this.getStatusText(printInfo.Status), true);
+            await this.setState('print.progress', printInfo.Progress, true);
+            await this.setState('print.current_layer', printInfo.CurrentLayer, true);
+            await this.setState('print.total_layers', printInfo.TotalLayer, true);
+            await this.setState('print.filename', printInfo.Filename, true);
+            await this.setState('print.print_speed', printInfo.PrintSpeedPct, true);
+            await this.setState('print.current_ticks', printInfo.CurrentTicks, true);
+            await this.setState('print.current_ticks_formatted', this.formatTime(printInfo.CurrentTicks), true);
+            await this.setState('print.total_ticks', printInfo.TotalTicks, true);
+            await this.setState('print.total_ticks_formatted', this.formatTime(printInfo.TotalTicks), true);
+        }
+
+    } catch (error) {
+        this.log.error(`Error updating states: ${error.message}`);
+    }
+}
+
+/**
+ * Convert status code to human-readable text
+ */
+getStatusText(statusCode) {
+    const statusMap = {
+        0: 'Idle',
+        1: 'Preparing',
+        2: 'Starting',
+        3: 'Printing',
+        4: 'Paused',
+        5: 'Completed',
+        6: 'Cancelled',
+        7: 'Error',
+        8: 'Preparing to Print',
+        9: 'Starting Print', 
+        10: 'Paused',
+        11: 'Resuming',
+        12: 'Cancelling',
+        13: 'Printing (Active)',
+        14: 'Print Complete',
+        15: 'Print Failed',
+        16: 'Heating Bed',
+        17: 'Heating Extruder',
+        18: 'Cooling Down',
+        19: 'Leveling',
+        20: 'Auto-Calibrating',
+        21: 'Loading Filament'
+    };
+    return statusMap[statusCode] || `Unknown Status (${statusCode})`;
+}
+
+/**
+ * Send command to printer
+ */
+sendCommand(cmd, data = {}) {
+    if (!this.isConnected || !this.ws) {
+        this.log.warn('Cannot send command - not connected to printer');
+        return;
+    }
+
+    const message = {
+        Id: '',
+        Data: {
+            Cmd: cmd,
+            Data: data,
+            RequestID: uuidv4(),
+            MainboardID: '',
+            TimeStamp: Date.now(),
+            From: 1
+        }
+    };
+
+    this.log.debug(`Sending command: ${JSON.stringify(message)}`);
+    this.ws.send(JSON.stringify(message));
+}
+
+/**
+ * Request status update from printer
+ */
+requestStatus() {
+    this.sendCommand(0);
+}
+
+/**
+ * Handle start print command
+ */
+async handleStartPrint() {
+    try {
+        const fileState = await this.getStateAsync('control.print_file');
+        const filename = fileState ? fileState.val : '';
+        
+        if (!filename) {
+            this.log.warn('No file specified for printing');
+            return;
+        }
+
+        this.sendCommand(128, {
+            Filename: filename.startsWith('/local/') ? filename : `/local/${filename}`,
+            StartLayer: 0,
+            Calibration_switch: 0,
+            PrintPlatformType: 0,
+            Tlp_Switch: 0
+        });
+    } catch (error) {
+        this.log.error(`Error starting print: ${error.message}`);
+    }
+}
+
+/**
+ * Start ping timer to keep connection alive
+ */
+startPingTimer() {
+    this.pingTimer = setInterval(() => {
+        if (this.isConnected && this.ws) {
+            this.ws.ping();
+        }
+    }, 30000); // Ping every 30 seconds
+}
+
+/**
+ * Start periodic status request timer
+ */
+startStatusRequestTimer() {
+    this.statusRequestTimer = setInterval(() => {
+        this.requestStatus();
+    }, this.config.pollInterval || 10000); // Default 10 seconds
+}
+
+/**
+ * Stop all timers
+ */
+stopTimers() {
+    if (this.pingTimer) {
+        clearInterval(this.pingTimer);
+        this.pingTimer = null;
+    }
+    if (this.statusRequestTimer) {
+        clearInterval(this.statusRequestTimer);
+        this.statusRequestTimer = null;
+    }
+    if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = null;
+    }
+}
+
+/**
+ * Schedule reconnection attempt
+ */
+scheduleReconnect() {
+    if (this.reconnectTimer) {
+        return;
+    }
+
+    this.reconnectTimer = setTimeout(() => {
+        this.reconnectTimer = null;
+        this.log.info('Attempting to reconnect to printer');
+        this.connectToPrinter();
+    }, this.config.reconnectInterval || 30000);
+}
+
+/**
+ * Cleanup on adapter unload
+ */
+onUnload(callback) {
+    try {
+        this.log.info('Cleaning up adapter');
+        this.isConnected = false;
+        this.stopTimers();
+
+        // Clear all alert timers
+        for (const timer of this.alertTimers.values()) {
+            clearTimeout(timer);
+        }
+        this.alertTimers.clear();
+
+        if (this.ws) {
+            this.ws.close();
+            this.ws = null;
+        }
+
+        callback();
+    } catch (e) {
+        callback();
+    }
+}
+```
+
+}
+
+// @ts-ignore parent is a valid property on module
+if (module.parent) {
+// Export the constructor in compact mode
+/**
+* @param {Partial<ioBroker.AdapterOptions>} [options={}]
+*/
+module.exports = (options) => new ElegooCentauriCarbon(options);
+} else {
+// Otherwise start the instance directly
+new ElegooCentauriCarbon();
+}
+await this.setState('lighting.rgb_g', status.LightStatus.RgbLight[1], true);
+await this.setState('lighting.rgb_b', status.LightStatus.RgbLight[2], true);
+}
+}
+
+```
         // Camera and timelapse
         if (status.TimeLapseStatus !== undefined) {
             await this.setState('camera.timelapse_status', status.TimeLapseStatus, true);
@@ -908,7 +1154,7 @@ async updateStates(status) {
             await this.setState('print.print_speed', printInfo.PrintSpeedPct, true);
             await this.setState('print.current_ticks', printInfo.CurrentTicks, true);
             await this.setState('print.total_ticks', printInfo.TotalTicks, true);
-    
+        }
 
     } catch (error) {
         this.log.error(`Error updating states: ${error.message}`);
@@ -917,48 +1163,27 @@ async updateStates(status) {
 
 /**
  * Convert status code to human-readable text
-     IDLE = 0
-    HOMING = 1
-    DROPPING = 2
-    PRINTING = 3
-    LIFTING = 4
-    PAUSING = 5
-    PAUSED = 6
-    STOPPING = 7
-    STOPPED = 8
-    COMPLETE = 9
-    FILE_CHECKING = 10
-    RECOVERY = 12
-    LOADING = 15
-            if status_int in [16, 18, 19, 20, 21]:
-            return cls.LOADING
-        if status_int == 13:
-            return cls.PRINTING
  */
 getStatusText(statusCode) {
     const statusMap = {
         0: 'Idle',
-        1: 'Homing',
-        2: 'Dripping',
+        1: 'Preparing',
+        2: 'Starting',
         3: 'Printing',
-        4: 'Lifting',
-        5: 'Pausing',
-        6: 'Paused',
-        7: 'Stopping',
-        8: 'Stopped',
-        9: 'Print complete', 
-        10: 'File checking',
+        4: 'Paused',
+        5: 'Completed',
+        6: 'Cancelled',
+        7: 'Error',
+        8: 'Preparing to Print',
+        9: 'Starting Print', 
+        10: 'Paused',
         11: 'Resuming',
-        12: 'Recovery',
-        13: 'Printing',
+        12: 'Cancelling',
+        13: 'Printing (Active)',
         14: 'Print Complete',
         15: 'Print Failed',
         16: 'Heating',
-        17: 'Cooling Down',
-        18: 'Loading',
-        19: 'Loading',
-        20: 'Loading',
-        21: 'Loading'
+        17: 'Cooling Down'
     };
     return statusMap[statusCode] || `Unknown Status (${statusCode})`;
 }
