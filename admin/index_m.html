@@ -14,14 +14,18 @@
 <script type="text/javascript" src="../../lib/js/materialize.js"></script>
 
 <script type="text/javascript" src="../../js/translate.js"></script>
-<script type="text/javascript" src="../../lib/js/ace/ace.js"></script>
-<script type="text/javascript" src="../../lib/js/ace/ext-language_tools.js"></script>
 <script type="text/javascript" src="../../js/adapter-settings.js"></script>
 
 <style>
+    body {
+        background-color: #ffffff !important;
+        color: #212121 !important;
+    }
+    
     .adapter-container {
         padding: 20px;
         max-width: 1200px;
+        background-color: #ffffff !important;
     }
     
     .logo {
@@ -29,7 +33,7 @@
         height: 64px;
     }
     
-    /* Fix input field visibility */
+    /* Fix input field visibility with high contrast */
     .input-field input[type=text], 
     .input-field input[type=number], 
     .input-field input[type=email], 
@@ -41,43 +45,59 @@
     .input-field input[type=tel], 
     .input-field input[type=search], 
     .input-field textarea.materialize-textarea {
-        color: #000 !important;
-        background-color: #fff !important;
-        border-bottom: 1px solid #9e9e9e !important;
+        color: #000000 !important;
+        background-color: #ffffff !important;
+        border-bottom: 2px solid #9e9e9e !important;
+        font-size: 16px !important;
+        font-weight: 500 !important;
     }
     
     .input-field input[type=text]:focus, 
     .input-field input[type=number]:focus {
-        border-bottom: 1px solid #26a69a !important;
-        box-shadow: 0 1px 0 0 #26a69a !important;
-        color: #000 !important;
+        border-bottom: 2px solid #26a69a !important;
+        box-shadow: 0 2px 0 0 #26a69a !important;
+        color: #000000 !important;
+        background-color: #ffffff !important;
     }
     
     .input-field label {
-        color: #9e9e9e !important;
+        color: #424242 !important;
+        font-weight: 600 !important;
     }
     
     .input-field label.active {
         color: #26a69a !important;
+        font-weight: 600 !important;
     }
     
-    /* Fix helper text and description visibility */
+    /* Fix helper text and description visibility with maximum contrast */
     .helper-text {
-        color: #666 !important;
-        font-size: 12px !important;
-        font-weight: normal !important;
+        color: #000000 !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        background-color: rgba(255,255,255,0.9) !important;
+        padding: 2px 4px !important;
     }
     
     /* Fix paragraph text visibility */
     .collapsible-body p {
-        color: #424242 !important;
-        line-height: 1.5;
+        color: #000000 !important;
+        line-height: 1.6;
+        font-weight: 500 !important;
+        background-color: rgba(255,255,255,0.9) !important;
+        padding: 4px !important;
     }
     
     /* Fix description text in cards */
     .card-panel p,
     .collection-item p {
-        color: #424242 !important;
+        color: #000000 !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Fix all text elements */
+    span, div, label, p, h1, h2, h3, h4, h5, h6 {
+        color: #000000 !important;
     }
     
     /* Fix checkbox visibility */
@@ -88,7 +108,11 @@
     
     /* Table styling */
     table.striped > tbody > tr:nth-child(odd) {
-        background-color: rgba(242, 242, 242, 0.5);
+        background-color: rgba(242, 242, 242, 0.8);
+    }
+    
+    table th, table td {
+        color: #000000 !important;
     }
     
     .collection .collection-item {
@@ -97,11 +121,13 @@
         padding: 10px 20px;
         margin: 0;
         border-bottom: 1px solid #e0e0e0;
+        color: #000000 !important;
     }
     
     /* Button styling */
     .btn {
         background-color: #26a69a;
+        color: #ffffff !important;
     }
     
     .btn:hover, .btn-large:hover {
@@ -115,6 +141,29 @@
         margin: 0.5rem 0 1rem 0;
         border-radius: 2px;
         box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
+        color: #000000 !important;
+    }
+
+    /* Collapsible headers */
+    .collapsible-header {
+        color: #000000 !important;
+    }
+
+    /* Footer with save/cancel buttons */
+    .adapter-buttons {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        border-top: 1px solid #e0e0e0;
+        padding: 15px 20px;
+        box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+        z-index: 1000;
+    }
+    
+    .adapter-container {
+        padding-bottom: 80px; /* Make room for fixed buttons */
     }
 </style>
 ```
@@ -144,24 +193,24 @@
                 <div class="collapsible-body">
                     <div class="row">
                         <div class="input-field col s12 m6">
-                            <input class="value" id="host" type="text" data-default="192.168.178.34"/>
+                            <input class="value" id="host" type="text"/>
                             <label for="host" class="translate">Printer IP Address</label>
                             <span class="helper-text translate">IP address of your Elegoo Centauri Carbon printer</span>
                         </div>
                         <div class="input-field col s12 m6">
-                            <input class="value" id="port" type="number" min="1" max="65535" data-default="3030"/>
+                            <input class="value" id="port" type="number" min="1" max="65535"/>
                             <label for="port" class="translate">WebSocket Port</label>
                             <span class="helper-text translate">WebSocket port (default: 3030)</span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="input-field col s12 m6">
-                            <input class="value" id="pollInterval" type="number" min="1000" max="300000" data-default="10000"/>
+                            <input class="value" id="pollInterval" type="number" min="1" max="300"/>
                             <label for="pollInterval" class="translate">Poll Interval (seconds)</label>
-                            <span class="helper-text translate">How often to request status updates (10-300 seconds)</span>
+                            <span class="helper-text translate">How often to request status updates (1-300 seconds)</span>
                         </div>
                         <div class="input-field col s12 m6">
-                            <input class="value" id="reconnectInterval" type="number" min="5000" max="300000" data-default="30000"/>
+                            <input class="value" id="reconnectInterval" type="number" min="5" max="300"/>
                             <label for="reconnectInterval" class="translate">Reconnect Interval (seconds)</label>
                             <span class="helper-text translate">Wait time before reconnection attempts (5-300 seconds)</span>
                         </div>
@@ -180,14 +229,14 @@
                         <div class="col s12 m6">
                             <p>
                                 <label>
-                                    <input type="checkbox" class="value" id="enableCamera" data-default="true"/>
+                                    <input type="checkbox" class="value" id="enableCamera"/>
                                     <span class="translate">Enable Camera Integration</span>
                                 </label>
                             </p>
                             <span class="helper-text translate">Enable camera stream monitoring and controls</span>
                         </div>
                         <div class="input-field col s12 m6">
-                            <input class="value" id="cameraPort" type="number" min="1" max="65535" data-default="8080"/>
+                            <input class="value" id="cameraPort" type="number" min="1" max="65535"/>
                             <label for="cameraPort" class="translate">Camera Port</label>
                             <span class="helper-text translate">MJPEG camera stream port</span>
                         </div>
@@ -197,31 +246,9 @@
                             <h6 class="translate">Camera Stream Information</h6>
                             <p class="translate">Common MJPEG stream URLs:</p>
                             <div class="collection">
-                                <div class="collection-item">http://[PRINTER_IP]:8080/video_feed</div>
-                                <div class="collection-item">http://[PRINTER_IP]:8080/stream.mjpg</div>
-                                <div class="collection-item">http://[PRINTER_IP]/video_feed</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </li>
-
-            <!-- Network Discovery -->
-            <li>
-                <div class="collapsible-header">
-                    <i class="material-icons">search</i>
-                    <span class="translate">Connection Test</span>
-                </div>
-                <div class="collapsible-body">
-                    <div class="row">
-                        <div class="col s12">
-                            <p class="translate">Test the connection to verify your printer settings.</p>
-                            <button id="test-connection" class="btn waves-effect waves-light" type="button">
-                                <i class="material-icons left">play_arrow</i>
-                                <span class="translate">Test Connection</span>
-                            </button>
-                            <div id="test-result" class="card-panel" style="display: none; margin-top: 10px;">
-                                <span id="test-message"></span>
+                                <div class="collection-item">http://192.168.178.34:8080/video_feed</div>
+                                <div class="collection-item">http://192.168.178.34:8080/stream.mjpg</div>
+                                <div class="collection-item">http://192.168.178.34/video_feed</div>
                             </div>
                         </div>
                     </div>
@@ -239,14 +266,14 @@
                         <div class="col s12 m6">
                             <p>
                                 <label>
-                                    <input type="checkbox" class="value" id="enableAlerts" data-default="true"/>
+                                    <input type="checkbox" class="value" id="enableAlerts"/>
                                     <span class="translate">Enable Alerts</span>
                                 </label>
                             </p>
                             <span class="helper-text translate">Enable automatic alert generation</span>
                         </div>
                         <div class="input-field col s12 m6">
-                            <input class="value" id="alertClearTimeout" type="number" min="60" max="3600" data-default="300"/>
+                            <input class="value" id="alertClearTimeout" type="number" min="60" max="3600"/>
                             <label for="alertClearTimeout" class="translate">Alert Auto-Clear (seconds)</label>
                             <span class="helper-text translate">Time before alerts automatically clear (60-3600 seconds)</span>
                         </div>
@@ -254,10 +281,10 @@
                 </div>
             </li>
 
-            <!-- Test Connection -->
+            <!-- Advanced Settings -->
             <li>
                 <div class="collapsible-header">
-                    <i class="material-icons">settings_ethernet</i>
+                    <i class="material-icons">settings</i>
                     <span class="translate">Advanced Settings</span>
                 </div>
                 <div class="collapsible-body">
@@ -265,7 +292,7 @@
                         <div class="col s12 m6">
                             <p>
                                 <label>
-                                    <input type="checkbox" class="value" id="enableAutoDiscovery" data-default="true"/>
+                                    <input type="checkbox" class="value" id="enableAutoDiscovery"/>
                                     <span class="translate">Enable Auto-Discovery</span>
                                 </label>
                             </p>
@@ -274,7 +301,7 @@
                         <div class="col s12 m6">
                             <p>
                                 <label>
-                                    <input type="checkbox" class="value" id="enableDebugLogging" data-default="false"/>
+                                    <input type="checkbox" class="value" id="enableDebugLogging"/>
                                     <span class="translate">Enable Debug Logging</span>
                                 </label>
                             </p>
@@ -282,74 +309,25 @@
                         </div>
                     </div>
                 </div>
-            </li>" type="button">
+            </li>
+
+            <!-- Connection Test -->
+            <li>
+                <div class="collapsible-header">
+                    <i class="material-icons">settings_ethernet</i>
+                    <span class="translate">Connection Test</span>
+                </div>
+                <div class="collapsible-body">
+                    <div class="row">
+                        <div class="col s12">
+                            <p class="translate">Test the connection to verify your printer settings.</p>
+                            <button id="test-connection" class="btn waves-effect waves-light" type="button">
                                 <i class="material-icons left">play_arrow</i>
                                 <span class="translate">Test Connection</span>
                             </button>
                             <div id="test-result" class="card-panel" style="display: none; margin-top: 10px;">
                                 <span id="test-message"></span>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </li>
-
-            <!-- SDCP Protocol Info -->
-            <li>
-                <div class="collapsible-header">
-                    <i class="material-icons">info</i>
-                    <span class="translate">SDCP Protocol Info</span>
-                </div>
-                <div class="collapsible-body">
-                    <div class="row">
-                        <div class="col s12">
-                            <h6 class="translate">Supported Commands</h6>
-                            <table class="striped">
-                                <thead>
-                                    <tr>
-                                        <th class="translate">Command</th>
-                                        <th class="translate">Function</th>
-                                        <th class="translate">Description</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>0</td>
-                                        <td class="translate">Request Status</td>
-                                        <td class="translate">Get current printer status</td>
-                                    </tr>
-                                    <tr>
-                                        <td>128</td>
-                                        <td class="translate">Start Print</td>
-                                        <td class="translate">Begin printing a file</td>
-                                    </tr>
-                                    <tr>
-                                        <td>129</td>
-                                        <td class="translate">Pause Print</td>
-                                        <td class="translate">Pause current print job</td>
-                                    </tr>
-                                    <tr>
-                                        <td>130</td>
-                                        <td class="translate">Cancel Print</td>
-                                        <td class="translate">Cancel current print job</td>
-                                    </tr>
-                                    <tr>
-                                        <td>131</td>
-                                        <td class="translate">Resume Print</td>
-                                        <td class="translate">Resume paused print job</td>
-                                    </tr>
-                                    <tr>
-                                        <td>386</td>
-                                        <td class="translate">Camera Stream</td>
-                                        <td class="translate">Enable/disable camera stream</td>
-                                    </tr>
-                                    <tr>
-                                        <td>403</td>
-                                        <td class="translate">Toggle Light</td>
-                                        <td class="translate">Control printer lighting</td>
-                                    </tr>
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
@@ -361,6 +339,24 @@
 
 </div>
 
+<!-- Fixed Save/Cancel Buttons -->
+
+<div class="adapter-buttons">
+    <div class="row" style="margin-bottom: 0;">
+        <div class="col s12">
+            <button type="button" id="save" class="btn waves-effect waves-light green">
+                <i class="material-icons left">save</i>
+                <span class="translate">Save</span>
+            </button>
+            <button type="button" id="cancel" class="btn waves-effect waves-light grey" style="margin-left: 10px;">
+                <i class="material-icons left">cancel</i>
+                <span class="translate">Cancel</span>
+            </button>
+            <span id="save-status" style="margin-left: 20px; font-weight: bold;"></span>
+        </div>
+    </div>
+</div>
+
 <script type="text/javascript">
     // Translation dictionary
     systemDictionary = {
@@ -369,7 +365,7 @@
             "de": "Verbindungseinstellungen"
         },
         "Printer IP Address": {
-            "en": "Printer IP Address",
+            "en": "Printer IP Address", 
             "de": "Drucker IP-Adresse"
         },
         "IP address of your Elegoo Centauri Carbon printer": {
@@ -384,147 +380,24 @@
             "en": "WebSocket port (default: 3030)",
             "de": "WebSocket Port (Standard: 3030)"
         },
-        "Poll Interval (ms)": {
-            "en": "Poll Interval (ms)",
-            "de": "Abfrageintervall (ms)"
+        "Poll Interval (seconds)": {
+            "en": "Poll Interval (seconds)",
+            "de": "Abfrageintervall (Sekunden)"
         },
-        "How often to request status updates": {
-            "en": "How often to request status updates",
-            "de": "Wie oft Statusupdates angefordert werden"
+        "Save": {
+            "en": "Save",
+            "de": "Speichern"
         },
-        "Reconnect Interval (ms)": {
-            "en": "Reconnect Interval (ms)",
-            "de": "Wiederverbindungsintervall (ms)"
-        },
-        "Wait time before reconnection attempts": {
-            "en": "Wait time before reconnection attempts",
-            "de": "Wartezeit vor Wiederverbindungsversuchen"
-        },
-        "Camera Settings": {
-            "en": "Camera Settings",
-            "de": "Kamera-Einstellungen"
-        },
-        "Enable Camera Integration": {
-            "en": "Enable Camera Integration",
-            "de": "Kamera-Integration aktivieren"
-        },
-        "Enable camera stream monitoring and controls": {
-            "en": "Enable camera stream monitoring and controls",
-            "de": "Kamera-Stream-Überwachung und -Steuerung aktivieren"
-        },
-        "Camera Port": {
-            "en": "Camera Port",
-            "de": "Kamera Port"
-        },
-        "MJPEG camera stream port": {
-            "en": "MJPEG camera stream port",
-            "de": "MJPEG Kamera-Stream Port"
-        },
-        "Network Discovery": {
-            "en": "Network Discovery",
-            "de": "Netzwerk-Erkennung"
-        },
-        "Enable Auto-Discovery": {
-            "en": "Enable Auto-Discovery",
-            "de": "Auto-Erkennung aktivieren"
-        },
-        "Automatically discover printers on startup": {
-            "en": "Automatically discover printers on startup",
-            "de": "Drucker beim Start automatisch erkennen"
-        },
-        "Scan Network Now": {
-            "en": "Scan Network Now",
-            "de": "Netzwerk jetzt scannen"
-        },
-        "Alert Settings": {
-            "en": "Alert Settings",
-            "de": "Alarm-Einstellungen"
-        },
-        "Enable Alerts": {
-            "en": "Enable Alerts",
-            "de": "Alarme aktivieren"
-        },
-        "Enable automatic alert generation": {
-            "en": "Enable automatic alert generation",
-            "de": "Automatische Alarm-Generierung aktivieren"
-        },
-        "Alert Auto-Clear (ms)": {
-            "en": "Alert Auto-Clear (ms)",
-            "de": "Alarm Auto-Löschen (ms)"
-        },
-        "Time before alerts automatically clear": {
-            "en": "Time before alerts automatically clear",
-            "de": "Zeit bis Alarme automatisch gelöscht werden"
-        },
-        "Advanced Settings": {
-            "en": "Advanced Settings",
-            "de": "Erweiterte Einstellungen"
-        },
-        "Enable Debug Logging": {
-            "en": "Enable Debug Logging",
-            "de": "Debug-Protokollierung aktivieren"
-        },
-        "Enable detailed logging for troubleshooting": {
-            "en": "Enable detailed logging for troubleshooting",
-            "de": "Detaillierte Protokollierung zur Fehlerbehebung aktivieren"
-        },
-        "Connection Test": {
-            "en": "Connection Test",
-            "de": "Verbindungstest"
-        },
-        "Test Connection": {
-            "en": "Test Connection",
-            "de": "Verbindung testen"
-        },
-        "Test the connection to your printer to verify settings.": {
-            "en": "Test the connection to your printer to verify settings.",
-            "de": "Testen Sie die Verbindung zu Ihrem Drucker, um die Einstellungen zu überprüfen."
-        },
-        "SDCP Protocol Info": {
-            "en": "SDCP Protocol Info",
-            "de": "SDCP Protokoll Info"
-        },
-        "Supported Commands": {
-            "en": "Supported Commands",
-            "de": "Unterstützte Befehle"
-        },
-        "Command": {
-            "en": "Command",
-            "de": "Befehl"
-        },
-        "Function": {
-            "en": "Function",
-            "de": "Funktion"
-        },
-        "Description": {
-            "en": "Description",
-            "de": "Beschreibung"
-        },
-        "Request Status": {
-            "en": "Request Status",
-            "de": "Status anfordern"
-        },
-        "Get current printer status": {
-            "en": "Get current printer status",
-            "de": "Aktuellen Druckerstatus abrufen"
-        },
-        "Common MJPEG stream URLs:": {
-            "en": "Common MJPEG stream URLs:",
-            "de": "Häufige MJPEG-Stream-URLs:"
-        },
-        "Camera Stream Information": {
-            "en": "Camera Stream Information",
-            "de": "Kamera-Stream-Informationen"
-        },
-        "Discovery Results:": {
-            "en": "Discovery Results:",
-            "de": "Erkennungsergebnisse:"
+        "Cancel": {
+            "en": "Cancel", 
+            "de": "Abbrechen"
         }
     };
 
     let onChange;
+    let originalSettings = {};
 
-    // Initialize materialize components
+    // Initialize on page load
     $(document).ready(function() {
         M.Collapsible.init($('.collapsible'));
         
@@ -533,9 +406,15 @@
             testConnection();
         });
 
-        // Manual discovery button
-        $('#manual-discovery').click(function() {
-            runNetworkDiscovery();
+        // Save button
+        $('#save').click(function() {
+            save();
+        });
+
+        // Cancel button  
+        $('#cancel').click(function() {
+            loadSettings(originalSettings);
+            showStatus('Changes cancelled', 'orange');
         });
     });
 
@@ -552,7 +431,6 @@
             return;
         }
         
-        // Disable button and show loading
         $button.addClass('disabled');
         $button.find('span').text('Testing...');
         
@@ -568,7 +446,6 @@
                 showTestResult('error', `Connection test failed: ${error.message}`);
             }
             
-            // Re-enable button
             $button.removeClass('disabled');
             $button.find('span').text('Test Connection');
         }, 2000);
@@ -590,38 +467,23 @@
         $message.text(message);
     }
 
-    // Load settings from ioBroker
+    // Show status message
+    function showStatus(message, color) {
+        const $status = $('#save-status');
+        $status.text(message).css('color', color || 'green');
+        setTimeout(() => {
+            $status.text('').css('color', '');
+        }, 3000);
+    }
+
+    // Load settings from ioBroker with defaults
     function load(settings, onChange_) {
-        if (!settings) return;
+        if (!settings) settings = {};
         
         onChange = onChange_;
+        originalSettings = JSON.parse(JSON.stringify(settings)); // Deep copy
         
-        $('.value').each(function() {
-            const $this = $(this);
-            const id = $this.attr('id');
-            let value = settings[id];
-            
-            // Use default value if setting is undefined
-            if (value === undefined) {
-                value = $this.data('default');
-            }
-            
-            // Convert milliseconds to seconds for display
-            if ($this.attr('type') === 'number' && (id === 'pollInterval' || id === 'reconnectInterval' || id === 'alertClearTimeout')) {
-                if (typeof value === 'number') {
-                    value = Math.floor(value / 1000);
-                }
-            }
-            
-            if ($this.attr('type') === 'checkbox') {
-                $this.prop('checked', value === true || value === 'true').trigger('change');
-            } else {
-                $this.val(value).trigger('change');
-            }
-        });
-        
-        // Update labels for materialize
-        M.updateTextFields();
+        loadSettings(settings);
         
         // Set up change listeners
         $('.value').on('input change', function() {
@@ -629,6 +491,49 @@
         });
         
         if (onChange) onChange(false);
+    }
+
+    function loadSettings(settings) {
+        // Define defaults
+        const defaults = {
+            host: '192.168.178.34',
+            port: 3030,
+            cameraPort: 8080,
+            pollInterval: 10, // in seconds for display
+            reconnectInterval: 30, // in seconds for display  
+            alertClearTimeout: 300, // in seconds for display
+            enableCamera: true,
+            enableAlerts: true,
+            enableAutoDiscovery: true,
+            enableDebugLogging: false
+        };
+
+        $('.value').each(function() {
+            const $this = $(this);
+            const id = $this.attr('id');
+            let value = settings[id];
+            
+            // Use default if undefined
+            if (value === undefined) {
+                value = defaults[id];
+            }
+            
+            // Convert milliseconds to seconds for time intervals
+            if ($this.attr('type') === 'number' && (id === 'pollInterval' || id === 'reconnectInterval' || id === 'alertClearTimeout')) {
+                if (typeof value === 'number' && value >= 1000) {
+                    value = Math.floor(value / 1000);
+                }
+            }
+            
+            if ($this.attr('type') === 'checkbox') {
+                $this.prop('checked', value === true || value === 'true');
+            } else {
+                $this.val(value);
+            }
+        });
+        
+        // Update materialize labels
+        M.updateTextFields();
     }
 
     // Save settings to ioBroker
@@ -644,45 +549,54 @@
             } else if ($this.attr('type') === 'number') {
                 let value = parseInt($this.val(), 10);
                 
-                // Convert seconds to milliseconds for internal storage
-                if (id === 'pollInterval' || id === 'reconnectInterval') {
-                    value = value * 1000;
-                } else if (id === 'alertClearTimeout') {
+                // Convert seconds to milliseconds for storage
+                if (id === 'pollInterval' || id === 'reconnectInterval' || id === 'alertClearTimeout') {
                     value = value * 1000;
                 }
                 
-                obj[id] = isNaN(value) ? ($this.data('default') * (id.includes('Interval') || id.includes('Timeout') ? 1000 : 1)) : value;
+                obj[id] = isNaN(value) ? (id === 'pollInterval' ? 10000 : id === 'reconnectInterval' ? 30000 : 300000) : value;
             } else {
-                obj[id] = $this.val() || $this.data('default');
+                obj[id] = $this.val() || '192.168.178.34';
             }
         });
         
         // Validate required fields
         if (!obj.host) {
-            M.toast({html: 'Please enter a printer IP address', classes: 'red'});
+            showStatus('Please enter a printer IP address', 'red');
             return;
         }
         
         // Validate IP address format
         const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
         if (!ipRegex.test(obj.host)) {
-            M.toast({html: 'Please enter a valid IP address', classes: 'red'});
+            showStatus('Please enter a valid IP address', 'red');
             return;
         }
         
         // Validate port ranges
         if (obj.port < 1 || obj.port > 65535) {
-            M.toast({html: 'WebSocket port must be between 1 and 65535', classes: 'red'});
+            showStatus('WebSocket port must be between 1 and 65535', 'red');
             return;
         }
         
         if (obj.cameraPort < 1 || obj.cameraPort > 65535) {
-            M.toast({html: 'Camera port must be between 1 and 65535', classes: 'red'});
+            showStatus('Camera port must be between 1 and 65535', 'red');
             return;
         }
         
-        M.toast({html: 'Settings saved successfully', classes: 'green'});
-        callback(obj);
+        showStatus('Settings saved successfully', 'green');
+        
+        // Update original settings
+        originalSettings = JSON.parse(JSON.stringify(obj));
+        
+        if (callback) {
+            callback(obj);
+        } else {
+            // Direct save to adapter
+            if (typeof parent !== 'undefined' && parent.gMain) {
+                parent.gMain.saveConfig(obj);
+            }
+        }
     }
 </script>
 
