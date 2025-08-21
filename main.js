@@ -1,5 +1,4 @@
 /**
-
 - ioBroker Elegoo Centauri Carbon Adapter
 - Monitors Elegoo Centauri Carbon 3D printer via SDCP protocol
   */
@@ -922,7 +921,6 @@ async updateStates(status) {
     } catch (error) {
         this.log.error(`Error updating states: ${error.message}`);
     }
-}
 
 /**
  * Convert status code to human-readable text
