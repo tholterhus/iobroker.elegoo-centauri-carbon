@@ -1107,8 +1107,6 @@ await this.setState('lighting.rgb_g', status.LightStatus.RgbLight[1], true);
 await this.setState('lighting.rgb_b', status.LightStatus.RgbLight[2], true);
 }
 }
-
-```
         // Camera and timelapse
         if (status.TimeLapseStatus !== undefined) {
             await this.setState('camera.timelapse_status', status.TimeLapseStatus, true);
