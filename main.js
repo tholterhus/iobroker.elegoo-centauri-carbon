@@ -1090,8 +1090,6 @@ onUnload(callback) {
         callback();
     }
 }
-```
-
 }
 
 // @ts-ignore parent is a valid property on module
