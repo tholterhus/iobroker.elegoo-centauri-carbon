@@ -33,7 +33,7 @@ constructor(options) {
     };
 
     this.on('ready', this.onReady.bind(this));
-    this.on('stateChange', this.onStateChange.bind(this));
+/*    this.on('stateChange', this.onStateChange.bind(this)); */
     this.on('unload', this.onUnload.bind(this));
 }
 
